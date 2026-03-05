@@ -1759,27 +1759,27 @@ function generateServiceReport() {
   // ── HEADER ──────────────────────────────────────────────────────────────────
   // White background header with logo
   doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, W, 90, 'F');
+  doc.rect(0, 0, W, 158, 'F');
 
   // Logo image
   try {
-    doc.addImage(AG_LOGO_B64, 'JPEG', margin, 8, 110, 74);
+    doc.addImage(AG_LOGO_B64, 'JPEG', margin, 4, 220, 148);
   } catch(e) {}
 
   // Address right side
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(107, 79, 53);
-  doc.text('3882 NW 151st Terr, Miami Gardens, FL 33054', W - margin, 36, { align: 'right' });
-  doc.text('sales@agbiomedical.com', W - margin, 50, { align: 'right' });
-  doc.text('service@agbiomedical.com', W - margin, 63, { align: 'right' });
+  doc.text('3882 NW 151st Terr, Miami Gardens, FL 33054', W - margin, 100, { align: 'right' });
+  doc.text('sales@agbiomedical.com', W - margin, 114, { align: 'right' });
+  doc.text('service@agbiomedical.com', W - margin, 128, { align: 'right' });
 
   // Bottom border line
   doc.setDrawColor(176, 90, 26);
   doc.setLineWidth(2);
-  doc.line(0, 90, W, 90);
+  doc.line(0, 158, W, 158);
 
-  y = 90;
+  y = 158;
 
   // ── REPORT TITLE STRIP ──────────────────────────────────────────────────────
   doc.setFillColor(248, 244, 239);
