@@ -1778,177 +1778,328 @@ function generateServiceReport() {
 
   var { jsPDF } = window.jspdf;
   var doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  var W = 612, margin = 48, y = 0, contentW = W - margin * 2;
+  var W = 612, H = 792;
+  var margin = 52;
+  var contentW = W - margin * 2;
+  var y = 0;
 
-  // ── HEADER ──────────────────────────────────────────────────────────────────
-  // White background header with logo
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, W, 158, 'F');
+  // ── COLOR PALETTE ────────────────────────────────────────────────────────────
+  var C = {
+    brand:     [176, 90,  26],   // rich amber
+    brandDark: [120, 58,  12],   // deep bronze
+    brandLight:[240, 220, 195],  // warm cream
+    ink:       [22,  18,  12],   // near-black
+    inkMid:    [80,  65,  50],   // warm dark gray
+    inkLight:  [140, 118, 95],   // warm medium gray
+    rule:      [220, 205, 185],  // light warm rule
+    bg:        [252, 249, 244],  // off-white warm
+    white:     [255, 255, 255],
+    black:     [0,   0,   0],
+  };
 
-  // Logo image
+  // ── FULL PAGE BACKGROUND ─────────────────────────────────────────────────────
+  doc.setFillColor(...C.bg);
+  doc.rect(0, 0, W, H, 'F');
+
+  // ── LEFT ACCENT STRIPE ───────────────────────────────────────────────────────
+  doc.setFillColor(...C.brand);
+  doc.rect(0, 0, 6, H, 'F');
+
+  // ── HEADER ZONE ──────────────────────────────────────────────────────────────
+  doc.setFillColor(...C.white);
+  doc.rect(6, 0, W - 6, 148, 'F');
+
+  // Logo
   try {
-    doc.addImage(AG_LOGO_B64, 'JPEG', margin, 4, 220, 148);
+    doc.addImage(AG_LOGO_B64, 'JPEG', margin, 2, 200, 136);
   } catch(e) {}
 
-  // Address right side
+  // Address block — right-aligned, refined
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C.inkLight);
+  doc.text('3882 NW 151st Terr', W - margin, 78, { align: 'right' });
+  doc.text('Miami Gardens, FL 33054', W - margin, 90, { align: 'right' });
+  doc.setTextColor(...C.brand);
+  doc.text('sales@agbiomedical.com', W - margin, 106, { align: 'right' });
+  doc.text('service@agbiomedical.com', W - margin, 118, { align: 'right' });
+
+  // Thin gold rule under header
+  doc.setDrawColor(...C.brand);
+  doc.setLineWidth(0.75);
+  doc.line(margin, 148, W - margin, 148);
+
+  y = 148;
+
+  // ── REPORT BANNER ────────────────────────────────────────────────────────────
+  y += 20;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...C.ink);
+  doc.text('Service Report', margin, y);
+
+  var reportDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(107, 79, 53);
-  doc.text('3882 NW 151st Terr, Miami Gardens, FL 33054', W - margin, 100, { align: 'right' });
-  doc.text('sales@agbiomedical.com', W - margin, 114, { align: 'right' });
-  doc.text('service@agbiomedical.com', W - margin, 128, { align: 'right' });
+  doc.setTextColor(...C.inkLight);
+  doc.text(reportDate, W - margin, y, { align: 'right' });
 
-  // Bottom border line
-  doc.setDrawColor(176, 90, 26);
-  doc.setLineWidth(2);
-  doc.line(0, 158, W, 158);
+  y += 6;
+  // Subtle underline beneath title
+  doc.setDrawColor(...C.rule);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, W - margin, y);
 
-  y = 158;
+  y += 18;
 
-  // ── REPORT TITLE STRIP ──────────────────────────────────────────────────────
-  doc.setFillColor(248, 244, 239);
-  doc.rect(0, y, W, 40, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(26, 15, 8);
-  doc.text('SERVICE REPORT', margin, y + 26);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(107, 79, 53);
-  var reportDate = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  doc.text('Generated: ' + reportDate, W - margin, y + 26, { align: 'right' });
-  y += 40;
-
-  // ── WORK ORDER INFO BAR ─────────────────────────────────────────────────────
-  doc.setFillColor(255,255,255);
-  doc.setDrawColor(226, 213, 195);
+  // ── WORK ORDER HERO CARD ─────────────────────────────────────────────────────
+  var cardH = 60;
+  // card shadow effect (offset rect)
+  doc.setFillColor(...C.rule);
+  doc.roundedRect(margin + 2, y + 2, contentW, cardH, 4, 4, 'F');
+  // card fill
+  doc.setFillColor(...C.white);
+  doc.setDrawColor(...C.brandLight);
   doc.setLineWidth(1);
-  doc.rect(margin, y + 12, contentW, 52, 'FD');
+  doc.roundedRect(margin, y, contentW, cardH, 4, 4, 'FD');
 
+  // Left accent inside card
+  doc.setFillColor(...C.brand);
+  doc.roundedRect(margin, y, 4, cardH, 2, 2, 'F');
+  doc.rect(margin + 2, y, 2, cardH, 'F'); // square off right side of small rect
+
+  // WO number
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(176, 90, 26);
-  doc.text('WO-' + j.id, margin + 16, y + 38);
+  doc.setFontSize(20);
+  doc.setTextColor(...C.brand);
+  doc.text('WO-' + j.id, margin + 22, y + 28);
 
+  // Status badge
+  var statusText = (j.status || 'Open').toUpperCase();
+  var statusBg = j.status === 'Closed' ? [34, 120, 60] : [176, 90, 26];
+  doc.setFillColor(...statusBg);
+  doc.roundedRect(margin + 22, y + 34, 50, 14, 3, 3, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...C.white);
+  doc.text(statusText, margin + 47, y + 43, { align: 'center' });
+
+  // Facility name — right side
+  var facilityName = j.facility || '—';
+  var facilityLines = doc.splitTextToSize(facilityName, contentW / 2 - 20);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(26, 15, 8);
-  doc.text(j.facility || '—', W - margin - 16, y + 32, { align: 'right' });
+  doc.setTextColor(...C.ink);
+  var facilityY = facilityLines.length > 1 ? y + 22 : y + 28;
+  doc.text(facilityLines, W - margin - 16, facilityY, { align: 'right' });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(107, 79, 53);
-  doc.text('Facility', W - margin - 16, y + 46, { align: 'right' });
-  y += 64;
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C.inkLight);
+  doc.text('FACILITY', W - margin - 16, y + 46, { align: 'right' });
 
-  // ── SECTION HELPER ──────────────────────────────────────────────────────────
-  function sectionTitle(title) {
-    y += 14;
-    doc.setFillColor(176, 90, 26);
-    doc.roundedRect(margin, y, contentW, 22, 3, 3, 'F');
+  y += cardH + 24;
+
+  // ── SECTION HELPERS ──────────────────────────────────────────────────────────
+  function sectionHeader(title) {
+    // Section label with decorative line
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(255, 255, 255);
-    doc.text(title.toUpperCase(), margin + 12, y + 15);
-    y += 30;
-  }
-
-  function field(label, value, x, fw) {
-    if (!fw) fw = contentW / 2 - 8;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(150, 110, 70);
-    doc.text(label.toUpperCase(), x, y);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(26, 15, 8);
-    doc.text(value || '—', x, y + 13);
-    return y + 13;
-  }
-
-  function twoFields(l1, v1, l2, v2) {
-    var col1 = margin + 12;
-    var col2 = margin + contentW / 2 + 8;
-    field(l1, v1, col1);
-    field(l2, v2, col2);
-    y += 28;
-    // divider
-    doc.setDrawColor(226, 213, 195);
+    doc.setFontSize(7);
+    doc.setTextColor(...C.brand);
+    doc.text(title.toUpperCase(), margin, y);
+    // full-width rule
+    doc.setDrawColor(...C.brand);
     doc.setLineWidth(0.5);
-    doc.line(margin + 12, y, margin + contentW - 12, y);
-    y += 8;
-  }
-
-  function fullField(label, value) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(150, 110, 70);
-    doc.text(label.toUpperCase(), margin + 12, y);
+    doc.line(margin + doc.getTextWidth(title.toUpperCase()) + 6, y - 1, W - margin, y - 1);
     y += 14;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(26, 15, 8);
-    var lines = doc.splitTextToSize(value || '—', contentW - 24);
-    doc.text(lines, margin + 12, y);
-    y += lines.length * 13 + 10;
-    doc.setDrawColor(226, 213, 195);
+  }
+
+  function sectionCard(drawFn) {
+    // Measure height needed
+    var startY = y;
+    drawFn(true); // dry run
+    var neededH = y - startY + 16;
+    y = startY;
+
+    // shadow
+    doc.setFillColor(...C.rule);
+    doc.roundedRect(margin + 2, y + 2, contentW, neededH, 3, 3, 'F');
+    // card
+    doc.setFillColor(...C.white);
+    doc.setDrawColor(...C.brandLight);
     doc.setLineWidth(0.5);
-    doc.line(margin + 12, y, margin + contentW - 12, y);
+    doc.roundedRect(margin, y, contentW, neededH, 3, 3, 'FD');
+
+    y += 14;
+    drawFn(false); // real draw
     y += 10;
   }
 
-  // Card border
-  function startCard() {
-    doc.setFillColor(255,255,255);
-    doc.setDrawColor(226, 213, 195);
-    doc.setLineWidth(1);
-  }
-
-  // ── EQUIPMENT SECTION ───────────────────────────────────────────────────────
-  sectionTitle('Equipment Information');
-  twoFields('Manufacturer', j.manufacturer, 'Model', j.model);
-  twoFields('Serial Number', j.serial, 'Asset Number', j.asset);
-
-  // ── SERVICE SECTION ─────────────────────────────────────────────────────────
-  sectionTitle('Service Details');
-  fullField('Issue Reported', j.issue);
-  fullField('Repair Description', j.repairDesc);
-
-  // ── COMPLETION ──────────────────────────────────────────────────────────────
-  sectionTitle('Completion');
-
-  // Checkboxes
-  function checkbox(label, checked, cx) {
-    doc.setDrawColor(176, 90, 26);
-    doc.setLineWidth(1);
-    doc.rect(cx, y - 9, 10, 10);
-    if (checked) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(176, 90, 26);
-      doc.text('✓', cx + 1.5, y);
-    }
+  function fieldLabel(lbl, x) {
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(26, 15, 8);
-    doc.text(label, cx + 15, y);
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.inkLight);
+    doc.text(lbl.toUpperCase(), x, y);
   }
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(150, 110, 70);
-  doc.text('SERVICE FLAGS', margin + 12, y);
-  y += 16;
-  checkbox('Calibrated', j.calibrated, margin + 12);
-  checkbox('Preventive Maintenance', j.pm, margin + 80);
+  function fieldValue(val, x) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.ink);
+    doc.text(val || '—', x, y + 11);
+  }
+
+  function dividerLine() {
+    doc.setDrawColor(...C.rule);
+    doc.setLineWidth(0.3);
+    doc.line(margin + 14, y, W - margin - 14, y);
+    y += 8;
+  }
+
+  // ── EQUIPMENT SECTION ────────────────────────────────────────────────────────
+  sectionHeader('Equipment Information');
+
+  sectionCard(function(dry) {
+    var col1 = margin + 14, col2 = margin + contentW / 2 + 8;
+
+    fieldLabel('Manufacturer', col1);
+    if (!dry) fieldValue(j.manufacturer, col1);
+    fieldLabel('Model', col2);
+    if (!dry) fieldValue(j.model, col2);
+    y += 22;
+
+    if (!dry) dividerLine(); else y += 8;
+
+    fieldLabel('Serial Number', col1);
+    if (!dry) fieldValue(j.serial, col1);
+    fieldLabel('Asset Number', col2);
+    if (!dry) fieldValue(j.asset, col2);
+    y += 16;
+  });
+
   y += 20;
 
-  // ── FOOTER ──────────────────────────────────────────────────────────────────
-  doc.setFillColor(176, 90, 26);
-  doc.rect(0, 756, W, 36, 'F');
+  // ── SERVICE DETAILS SECTION ──────────────────────────────────────────────────
+  sectionHeader('Service Details');
+
+  sectionCard(function(dry) {
+    var col1 = margin + 14;
+    var fieldW = contentW - 28;
+
+    fieldLabel('Issue Reported', col1);
+    y += 12;
+    if (!dry) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C.ink);
+      var issueLines = doc.splitTextToSize(j.issue || '—', fieldW);
+      doc.text(issueLines, col1, y);
+      y += issueLines.length * 12;
+    } else {
+      var issueLines2 = doc.splitTextToSize(j.issue || '—', fieldW);
+      y += issueLines2.length * 12;
+    }
+    y += 6;
+
+    if (!dry) dividerLine(); else y += 8;
+
+    fieldLabel('Repair Description', col1);
+    y += 12;
+    if (!dry) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C.ink);
+      var repLines = doc.splitTextToSize(j.repairDesc || '—', fieldW);
+      doc.text(repLines, col1, y);
+      y += repLines.length * 12;
+    } else {
+      var repLines2 = doc.splitTextToSize(j.repairDesc || '—', fieldW);
+      y += repLines2.length * 12;
+    }
+
+    // Tech notes if present
+    if (j.techNotes) {
+      y += 6;
+      if (!dry) dividerLine(); else y += 8;
+      fieldLabel('Technician Notes', col1);
+      y += 12;
+      if (!dry) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...C.inkMid);
+        var tnLines = doc.splitTextToSize(j.techNotes, fieldW);
+        doc.text(tnLines, col1, y);
+        y += tnLines.length * 12;
+      } else {
+        var tnLines2 = doc.splitTextToSize(j.techNotes, fieldW);
+        y += tnLines2.length * 12;
+      }
+    }
+    y += 4;
+  });
+
+  y += 20;
+
+  // ── COMPLETION SECTION ───────────────────────────────────────────────────────
+  sectionHeader('Completion');
+
+  sectionCard(function(dry) {
+    var col1 = margin + 14;
+
+    fieldLabel('Service Flags', col1);
+    y += 14;
+
+    if (!dry) {
+      // Calibrated pill
+      var calBg = j.calibrated ? C.brand : C.white;
+      var calBorder = j.calibrated ? C.brand : C.rule;
+      var calText = j.calibrated ? C.white : C.inkLight;
+      doc.setFillColor(...calBg);
+      doc.setDrawColor(...calBorder);
+      doc.setLineWidth(0.75);
+      doc.roundedRect(col1, y - 10, 72, 18, 4, 4, 'FD');
+      doc.setFont('helvetica', j.calibrated ? 'bold' : 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...calText);
+      doc.text((j.calibrated ? '✓ ' : '') + 'Calibrated', col1 + 36, y + 1, { align: 'center' });
+
+      // PM pill
+      var pmBg = j.pm ? C.brand : C.white;
+      var pmBorder = j.pm ? C.brand : C.rule;
+      var pmText = j.pm ? C.white : C.inkLight;
+      doc.setFillColor(...pmBg);
+      doc.setDrawColor(...pmBorder);
+      doc.roundedRect(col1 + 84, y - 10, 120, 18, 4, 4, 'FD');
+      doc.setFont('helvetica', j.pm ? 'bold' : 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...pmText);
+      doc.text((j.pm ? '✓ ' : '') + 'Preventive Maintenance', col1 + 144, y + 1, { align: 'center' });
+    }
+    y += 14;
+  });
+
+  // ── FOOTER ───────────────────────────────────────────────────────────────────
+  // Thin rule above footer
+  doc.setDrawColor(...C.rule);
+  doc.setLineWidth(0.5);
+  doc.line(margin, 738, W - margin, 738);
+
+  // Footer text
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(255, 220, 180);
-  doc.text('A&G Biomedical  ·  3882 NW 151st Terr, Miami Gardens, FL 33054  ·  sales@agbiomedical.com', W/2, 779, { align: 'center' });
+  doc.setFontSize(7);
+  doc.setTextColor(...C.inkLight);
+  doc.text('A&G Biomedical', margin, 758);
+  doc.text('3882 NW 151st Terr, Miami Gardens, FL 33054', margin, 769);
+
+  doc.setTextColor(...C.brand);
+  doc.text('sales@agbiomedical.com  ·  service@agbiomedical.com', W - margin, 758, { align: 'right' });
+
+  // Page number
+  doc.setTextColor(...C.inkLight);
+  doc.text('Page 1 of 1', W / 2, 769, { align: 'center' });
+
+  // Left stripe in footer area
+  doc.setFillColor(...C.brand);
+  doc.rect(0, 730, 6, 62, 'F');
 
   // Save
   doc.save('ServiceReport_WO-' + j.id + '.pdf');
