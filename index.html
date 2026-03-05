@@ -673,6 +673,12 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         <div class="form-row">
             
         </div>
+        <div class="form-row">
+          <div class="form-field full">
+            <label class="form-label">Tech Notes</label>
+            <textarea class="form-input" id="f-tech-notes" rows="3" placeholder="Internal technician notes..."></textarea>
+          </div>
+        </div>
         <div class="form-row" style="display:flex;gap:24px;align-items:center;padding:4px 0">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-muted)">
               <input type="checkbox" id="f-calibrated" style="width:16px;height:16px;accent-color:var(--accent)"> Calibrated
@@ -680,8 +686,8 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-muted)">
               <input type="checkbox" id="f-pm" style="width:16px;height:16px;accent-color:var(--accent)"> Preventive Maintenance
             </label>
+          </div>
         </div>
-
       </div>
 
       <!-- SERVICE REPORT -->
@@ -724,7 +730,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
           </label>
           <button onclick="submitComment()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer">Post</button>
         </div>
-        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -734,7 +739,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
       <button class="btn-save" onclick="saveJob()">Save Request</button>
     </div>
   </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════ DETAIL MODAL -->
 <div class="modal-overlay" id="detail-modal">
