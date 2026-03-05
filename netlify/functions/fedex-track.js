@@ -23,7 +23,7 @@ async function trackPackage(token, trackingNumber) {
       'X-locale': 'en_US'
     },
     body: JSON.stringify({
-      includeDetailedScans: false,
+      includeDetailedScans: true,
       trackingInfo: [{ trackingNumberInfo: { trackingNumber } }]
     })
   });
@@ -62,10 +62,18 @@ exports.handler = async (event) => {
       : '';
     const estimatedDelivery = output.estimatedDeliveryTimeWindow?.window?.ends || '';
 
+    // Get actual delivery date/time if delivered
+    let deliveredAt = '';
+    if (code === 'DL') {
+      const scans = output.scanEvents || [];
+      const dlScan = scans.find(s => s.eventType === 'DL');
+      if (dlScan) deliveredAt = dlScan.date || '';
+    }
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ status, code, location, estimatedDelivery })
+      body: JSON.stringify({ status, code, location, estimatedDelivery, deliveredAt })
     };
 
   } catch (err) {
