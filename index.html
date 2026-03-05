@@ -1740,7 +1740,8 @@ function renderToday() {
 
   var snoozedIds = getSnoozed();
   jobs.forEach(function(j) {
-    if (snoozedIds.indexOf(j.id) >= 0) return; // skip snoozed
+    if (snoozedIds.indexOf(j.id) >= 0) return; // skip permanently snoozed
+    if (isSnoozedTimed(j.id)) return; // skip timed snooze
     var s = j.status || '';
     var days = daysSince(j.opened);
     var threshold = STALE_RULES[s];
