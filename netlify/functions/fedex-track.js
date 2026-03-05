@@ -1,7 +1,7 @@
 // Netlify Function — FedEx Tracking Proxy
-const FEDEX_API_KEY = 'l7644086f688ba4de598dd681efcbd24c5';
-const FEDEX_SECRET_KEY = '3f1deb0807254382ad076d5bfd4891ac';
-const FEDEX_BASE = 'https://apis-sandbox.fedex.com';
+const FEDEX_API_KEY = 'l78b74564b8d2a4879bcd7a1e4347715a3';
+const FEDEX_SECRET_KEY = 'e636f244800046e4aa686b2b620f56d3';
+const FEDEX_BASE = 'https://apis.fedex.com';
 
 async function getToken() {
   const res = await fetch(`${FEDEX_BASE}/oauth/token`, {
