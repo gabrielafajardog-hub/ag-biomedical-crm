@@ -41,7 +41,16 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .add-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .add-btn:hover{opacity:.85}
 .app{display:flex;flex:1}
-nav{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;gap:2px}
+nav{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;gap:2px;transition:width .22s cubic-bezier(.4,0,.2,1),min-width .22s cubic-bezier(.4,0,.2,1)}
+nav.collapsed{width:52px;min-width:52px}
+nav.collapsed .nav-section{opacity:0;pointer-events:none}
+nav.collapsed .nav-item span:not(.nav-icon){display:none}
+nav.collapsed .nav-count{display:none}
+nav.collapsed .nav-item{justify-content:center;padding:9px 0}
+.nav-toggle{display:flex;align-items:center;justify-content:flex-end;padding:0 14px 10px;cursor:pointer}
+nav.collapsed .nav-toggle{justify-content:center;padding:0 0 10px}
+.nav-toggle-btn{background:none;border:1px solid var(--border);border-radius:5px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:13px;transition:all .15s}
+.nav-toggle-btn:hover{background:var(--surface2);color:var(--accent);border-color:var(--accent)}
 .nav-section{font-size:9px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);padding:10px 20px 4px;margin-top:8px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 22px;font-size:13px;color:var(--text-muted);cursor:pointer;border-left:2px solid transparent;transition:all .2s;letter-spacing:.01em}
 .nav-item:hover{color:var(--text);background:var(--surface2)}
@@ -304,16 +313,17 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         </div>
 </header>
 <div class="app">
-  <nav>
+<nav id="main-nav">
+    <div class="nav-toggle"><button class="nav-toggle-btn" onclick="toggleNav()" id="nav-toggle-btn" title="Collapse menu">&#8592;</button></div>
     <div class="nav-section">Menu</div>
-    <div class="nav-item active" onclick="showView('jobs',this)"><span class="nav-icon">&#128295;</span><span>Repair Jobs</span><span class="nav-count hot" id="nav-open-count">0</span></div>
-    <div class="nav-item" onclick="showView('dashboard',this)"><span class="nav-icon">&#9672;</span><span>Dashboard</span></div>
+    <div class="nav-item active" onclick="showView('jobs',this)" title="Repair Jobs"><span class="nav-icon">&#128295;</span><span>Repair Jobs</span><span class="nav-count hot" id="nav-open-count">0</span></div>
+    <div class="nav-item" onclick="showView('dashboard',this)" title="Dashboard"><span class="nav-icon">&#9672;</span><span>Dashboard</span></div>
     <div class="nav-section">Records</div>
-    <div class="nav-item" onclick="showView('customers',this)"><span class="nav-icon">&#127973;</span><span>Facilities</span></div>
-    <div class="nav-item" onclick="showView('equipment',this)"><span class="nav-icon">&#129658;</span><span>Equipment</span></div>
+    <div class="nav-item" onclick="showView('customers',this)" title="Facilities"><span class="nav-icon">&#127973;</span><span>Facilities</span></div>
+    <div class="nav-item" onclick="showView('equipment',this)" title="Equipment"><span class="nav-icon">&#129658;</span><span>Equipment</span></div>
     <div class="nav-section">Triage</div>
-    <div class="nav-item" id="nav-today" onclick="showView('today',this)"><span class="nav-icon">&#9889;</span><span>Today</span><span id="today-badge" style="background:#e53e3e;color:#fff;border-radius:10px;font-size:10px;font-family:var(--mono);padding:1px 6px;margin-left:4px;display:none"></span></div>
-    <div class="nav-item" id="nav-snoozed" onclick="showView('snoozed',this)"><span class="nav-icon">&#128277;</span><span>Do Not Remind</span><span id="snoozed-badge" style="background:var(--text-muted);color:#fff;border-radius:10px;font-size:10px;font-family:var(--mono);padding:1px 6px;margin-left:4px;display:none"></span></div>
+    <div class="nav-item" id="nav-today" onclick="showView('today',this)" title="Today"><span class="nav-icon">&#9889;</span><span>Today</span><span id="today-badge" style="background:#e53e3e;color:#fff;border-radius:10px;font-size:10px;font-family:var(--mono);padding:1px 6px;margin-left:4px;display:none"></span></div>
+    <div class="nav-item" id="nav-snoozed" onclick="showView('snoozed',this)" title="Do Not Remind"><span class="nav-icon">&#128277;</span><span>Do Not Remind</span><span id="snoozed-badge" style="background:var(--text-muted);color:#fff;border-radius:10px;font-size:10px;font-family:var(--mono);padding:1px 6px;margin-left:4px;display:none"></span></div>
   </nav>
   <main>
     <!-- DASHBOARD -->
@@ -1030,6 +1040,14 @@ var STATUS_OPTS = ['Open','Pending assignment','Estimating','Pending Approval','
 var TYPE_OPTS = ['Repair Request','Warranty Request','Purchase Request','Preventive Maintenance'];
 
 // ─── VIEWS ───────────────────────────────────────────────────────────────────
+function toggleNav() {
+  var nav = document.getElementById('main-nav');
+  var btn = document.getElementById('nav-toggle-btn');
+  var collapsed = nav.classList.toggle('collapsed');
+  btn.innerHTML = collapsed ? '&#8594;' : '&#8592;';
+  btn.title = collapsed ? 'Expand menu' : 'Collapse menu';
+}
+
 function showView(name, el) {
   if (name === 'today') renderToday();
   document.querySelectorAll('[id^="view-"]').forEach(function(v){v.classList.add('view-hidden');});
@@ -1834,9 +1852,9 @@ function generateServiceReport() {
   // ── REPORT BANNER ────────────────────────────────────────────────────────────
   y += 20;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
+  doc.setFontSize(18);
   doc.setTextColor(...C.ink);
-  doc.text('Service Report', margin, y);
+  doc.text('SERVICE REPORT', margin, y);
 
   var reportDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   doc.setFont('helvetica', 'normal');
@@ -1868,21 +1886,11 @@ function generateServiceReport() {
   doc.roundedRect(margin, y, 4, cardH, 2, 2, 'F');
   doc.rect(margin + 2, y, 2, cardH, 'F'); // square off right side of small rect
 
-  // WO number
+  // WO number — vertically centered
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(20);
   doc.setTextColor(...C.brand);
-  doc.text('WO-' + j.id, margin + 22, y + 28);
-
-  // Status badge
-  var statusText = (j.status || 'Open').toUpperCase();
-  var statusBg = j.status === 'Closed' ? [34, 120, 60] : [176, 90, 26];
-  doc.setFillColor(...statusBg);
-  doc.roundedRect(margin + 22, y + 34, 50, 14, 3, 3, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.5);
-  doc.setTextColor(...C.white);
-  doc.text(statusText, margin + 47, y + 43, { align: 'center' });
+  doc.text('WO-' + j.id, margin + 22, y + 36);
 
   // Facility name — right side
   var facilityName = j.facility || '—';
@@ -1913,13 +1921,7 @@ function generateServiceReport() {
     y += 14;
   }
 
-  function sectionCard(drawFn) {
-    // Measure height needed
-    var startY = y;
-    drawFn(true); // dry run
-    var neededH = y - startY + 16;
-    y = startY;
-
+  function sectionCard(neededH, drawFn) {
     // shadow
     doc.setFillColor(...C.rule);
     doc.roundedRect(margin + 2, y + 2, contentW, neededH, 3, 3, 'F');
@@ -1930,7 +1932,7 @@ function generateServiceReport() {
     doc.roundedRect(margin, y, contentW, neededH, 3, 3, 'FD');
 
     y += 14;
-    drawFn(false); // real draw
+    drawFn();
     y += 10;
   }
 
@@ -1958,22 +1960,20 @@ function generateServiceReport() {
   // ── EQUIPMENT SECTION ────────────────────────────────────────────────────────
   sectionHeader('Equipment Information');
 
-  sectionCard(function(dry) {
+  sectionCard(90, function() {
     var col1 = margin + 14, col2 = margin + contentW / 2 + 8;
 
-    fieldLabel('Manufacturer', col1);
-    if (!dry) fieldValue(j.manufacturer, col1);
-    fieldLabel('Model', col2);
-    if (!dry) fieldValue(j.model, col2);
-    y += 22;
+    fieldLabel('Manufacturer', col1); fieldLabel('Model', col2);
+    y += 10;
+    fieldValue(j.manufacturer, col1); fieldValue(j.model, col2);
+    y += 18;
 
-    if (!dry) dividerLine(); else y += 8;
+    dividerLine();
 
-    fieldLabel('Serial Number', col1);
-    if (!dry) fieldValue(j.serial, col1);
-    fieldLabel('Asset Number', col2);
-    if (!dry) fieldValue(j.asset, col2);
-    y += 16;
+    fieldLabel('Serial Number', col1); fieldLabel('Asset Number', col2);
+    y += 10;
+    fieldValue(j.serial, col1); fieldValue(j.asset, col2);
+    y += 14;
   });
 
   y += 20;
@@ -1981,58 +1981,41 @@ function generateServiceReport() {
   // ── SERVICE DETAILS SECTION ──────────────────────────────────────────────────
   sectionHeader('Service Details');
 
-  sectionCard(function(dry) {
+  sectionCard(120, function() {
     var col1 = margin + 14;
     var fieldW = contentW - 28;
 
     fieldLabel('Issue Reported', col1);
-    y += 12;
-    if (!dry) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
-      doc.setTextColor(...C.ink);
-      var issueLines = doc.splitTextToSize(j.issue || '—', fieldW);
-      doc.text(issueLines, col1, y);
-      y += issueLines.length * 12;
-    } else {
-      var issueLines2 = doc.splitTextToSize(j.issue || '—', fieldW);
-      y += issueLines2.length * 12;
-    }
-    y += 6;
+    y += 10;
+    var issueLines = doc.splitTextToSize(j.issue || '—', fieldW);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.ink);
+    doc.text(issueLines, col1, y);
+    y += issueLines.length * 12 + 6;
 
-    if (!dry) dividerLine(); else y += 8;
+    dividerLine();
 
     fieldLabel('Repair Description', col1);
-    y += 12;
-    if (!dry) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
-      doc.setTextColor(...C.ink);
-      var repLines = doc.splitTextToSize(j.repairDesc || '—', fieldW);
-      doc.text(repLines, col1, y);
-      y += repLines.length * 12;
-    } else {
-      var repLines2 = doc.splitTextToSize(j.repairDesc || '—', fieldW);
-      y += repLines2.length * 12;
-    }
+    y += 10;
+    var repLines = doc.splitTextToSize(j.repairDesc || '—', fieldW);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.ink);
+    doc.text(repLines, col1, y);
+    y += repLines.length * 12;
 
-    // Tech notes if present
     if (j.techNotes) {
       y += 6;
-      if (!dry) dividerLine(); else y += 8;
+      dividerLine();
       fieldLabel('Technician Notes', col1);
-      y += 12;
-      if (!dry) {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9.5);
-        doc.setTextColor(...C.inkMid);
-        var tnLines = doc.splitTextToSize(j.techNotes, fieldW);
-        doc.text(tnLines, col1, y);
-        y += tnLines.length * 12;
-      } else {
-        var tnLines2 = doc.splitTextToSize(j.techNotes, fieldW);
-        y += tnLines2.length * 12;
-      }
+      y += 10;
+      var tnLines = doc.splitTextToSize(j.techNotes, fieldW);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C.inkMid);
+      doc.text(tnLines, col1, y);
+      y += tnLines.length * 12;
     }
     y += 4;
   });
@@ -2042,38 +2025,37 @@ function generateServiceReport() {
   // ── COMPLETION SECTION ───────────────────────────────────────────────────────
   sectionHeader('Completion');
 
-  sectionCard(function(dry) {
+  sectionCard(50, function() {
     var col1 = margin + 14;
 
     fieldLabel('Service Flags', col1);
     y += 14;
 
-    if (!dry) {
-      // Calibrated pill
-      var calBg = j.calibrated ? C.brand : C.white;
-      var calBorder = j.calibrated ? C.brand : C.rule;
-      var calText = j.calibrated ? C.white : C.inkLight;
-      doc.setFillColor(...calBg);
-      doc.setDrawColor(...calBorder);
-      doc.setLineWidth(0.75);
-      doc.roundedRect(col1, y - 10, 72, 18, 4, 4, 'FD');
-      doc.setFont('helvetica', j.calibrated ? 'bold' : 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(...calText);
-      doc.text((j.calibrated ? '✓ ' : '') + 'Calibrated', col1 + 36, y + 1, { align: 'center' });
+    // Calibrated pill
+    var calBg = j.calibrated ? C.brand : C.white;
+    var calBorder = j.calibrated ? C.brand : C.rule;
+    var calText = j.calibrated ? C.white : C.inkLight;
+    doc.setFillColor(...calBg);
+    doc.setDrawColor(...calBorder);
+    doc.setLineWidth(0.75);
+    doc.roundedRect(col1, y - 10, 72, 18, 4, 4, 'FD');
+    doc.setFont('helvetica', j.calibrated ? 'bold' : 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...calText);
+    doc.text((j.calibrated ? '✓ ' : '') + 'Calibrated', col1 + 36, y + 1, { align: 'center' });
 
-      // PM pill
-      var pmBg = j.pm ? C.brand : C.white;
-      var pmBorder = j.pm ? C.brand : C.rule;
-      var pmText = j.pm ? C.white : C.inkLight;
-      doc.setFillColor(...pmBg);
-      doc.setDrawColor(...pmBorder);
-      doc.roundedRect(col1 + 84, y - 10, 120, 18, 4, 4, 'FD');
-      doc.setFont('helvetica', j.pm ? 'bold' : 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(...pmText);
-      doc.text((j.pm ? '✓ ' : '') + 'Preventive Maintenance', col1 + 144, y + 1, { align: 'center' });
-    }
+    // PM pill
+    var pmBg = j.pm ? C.brand : C.white;
+    var pmBorder = j.pm ? C.brand : C.rule;
+    var pmText = j.pm ? C.white : C.inkLight;
+    doc.setFillColor(...pmBg);
+    doc.setDrawColor(...pmBorder);
+    doc.roundedRect(col1 + 84, y - 10, 130, 18, 4, 4, 'FD');
+    doc.setFont('helvetica', j.pm ? 'bold' : 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...pmText);
+    doc.text((j.pm ? '✓ ' : '') + 'Preventive Maintenance', col1 + 149, y + 1, { align: 'center' });
+
     y += 14;
   });
 
