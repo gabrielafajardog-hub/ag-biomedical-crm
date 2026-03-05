@@ -183,6 +183,8 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
 .snooze-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-family:var(--mono);color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .15s}
 .snooze-btn:hover{border-color:var(--accent);color:var(--accent)}
 .snooze-btn.snoozed{background:var(--surface2);color:var(--text-muted);border-style:dashed}
+.done-snooze-btn{background:none;border:1px solid var(--green);border-radius:6px;padding:4px 10px;font-size:11px;font-family:var(--mono);color:var(--green);cursor:pointer;white-space:nowrap;transition:all .15s}
+.done-snooze-btn:hover{background:var(--green);color:#fff}
 .snoozed-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:8px;opacity:.7}
 .snoozed-card-id{font-family:var(--mono);font-size:11px;color:var(--text-muted);font-weight:700}
 /* TODAY TAB */
@@ -1621,8 +1623,28 @@ function fmtDate(d){if(!d) return '&mdash;';var p=d.split('-');if(p.length<3) re
 function getSnoozed() {
   try { return JSON.parse(localStorage.getItem('crm_snoozed') || '[]'); } catch(e) { return []; }
 }
+// Timed snoozes: { id: untilTimestamp }
+function getSnoozedTimed() {
+  try { return JSON.parse(localStorage.getItem('crm_snoozed_timed') || '{}'); } catch(e) { return {}; }
+}
+function isSnoozedTimed(jobId) {
+  var timed = getSnoozedTimed();
+  if (!timed[jobId]) return false;
+  if (Date.now() < timed[jobId]) return true;
+  // expired — clean up
+  delete timed[jobId];
+  localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
+  return false;
+}
+function snoozeForDays(jobId, days) {
+  var timed = getSnoozedTimed();
+  timed[jobId] = Date.now() + days * 86400000;
+  localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
+  renderToday();
+  renderSnoozed();
+}
 function isSnoozed(jobId) {
-  return getSnoozed().indexOf(jobId) >= 0;
+  return getSnoozed().indexOf(jobId) >= 0 || isSnoozedTimed(jobId);
 }
 function toggleSnooze(jobId) {
   var snoozed = getSnoozed();
@@ -1700,7 +1722,10 @@ function todayCardHtml(j, days, threshold, flag) {
       '<div class="today-days ' + cls + '">' + daysLabel + '</div>' +
       '<div class="today-flag">' + flag + '</div>' +
     '</div>' +
-    '<button class="snooze-btn" data-id="'+esc(j.id)+'" onclick="toggleSnooze(this.dataset.id)" title="Do not remind me about this job">&#128277; Don&#39;t remind</button>' +
+    '<div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">' +
+      '<button class="done-snooze-btn" data-id="'+esc(j.id)+'" onclick="snoozeForDays(this.dataset.id,5)" title="Mark as done — hide for 5 days">&#10003; Done</button>' +
+      '<button class="snooze-btn" data-id="'+esc(j.id)+'" onclick="toggleSnooze(this.dataset.id)" title="Do not remind me about this job">&#128277; Don&#39;t remind</button>' +
+    '</div>' +
   '</div>';
 }
 
