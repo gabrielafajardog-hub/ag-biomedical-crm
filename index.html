@@ -625,9 +625,9 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
           <div class="form-field">
             <label class="form-label">Tracking (Vendor Only)</label>
             <input type="text" class="form-input" id="f-tracking" placeholder="Tracking number">
+            <div id="tracking-status-badge" style="margin-top:8px"></div>
             <label class="form-label" style="margin-top:12px">Received (from Vendor)</label>
             <input type="date" class="form-input" id="f-received-vendor">
-            <div id="tracking-status-badge" style="margin-top:8px"></div>
           </div>
           <div class="form-field full">
             <label class="form-label">Vendor Attachments</label>
@@ -1309,12 +1309,18 @@ function openEditJobModal(id) {
   currentDetailId = id;
   // Show tracking badge
   var tbadge = document.getElementById('tracking-status-badge');
-  if (tbadge && j.tracking) {
-    var cached = trackingCache[j.tracking];
-    tbadge.innerHTML = trackingBadgeHtml(j.tracking, cached || null);
-    if (!cached) fetchTracking(j.tracking, tbadge.querySelector('.tracking-badge'));
-  } else if (tbadge) {
-    tbadge.innerHTML = '';
+  if (tbadge) {
+    var tn = (j.tracking || '').trim();
+    if (tn) {
+      var cached = trackingCache[tn];
+      tbadge.innerHTML = trackingBadgeHtml(tn, cached || null);
+      setTimeout(function() {
+        var badgeEl = document.getElementById('tracking-status-badge').querySelector('.tracking-badge');
+        if (badgeEl && !cached) fetchTracking(tn, badgeEl);
+      }, 100);
+    } else {
+      tbadge.innerHTML = '';
+    }
   }
 }
 
