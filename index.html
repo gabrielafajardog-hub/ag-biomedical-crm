@@ -1636,12 +1636,42 @@ function isSnoozedTimed(jobId) {
   localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
   return false;
 }
+var snoozeUndoTimers = {};
 function snoozeForDays(jobId, days) {
-  var timed = getSnoozedTimed();
-  timed[jobId] = Date.now() + days * 86400000;
-  localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
+  var card = document.querySelector('.done-snooze-btn[data-id="' + jobId + '"]');
+  if (card) {
+    var btnContainer = card.parentElement;
+    var undoBtn = document.createElement('button');
+    undoBtn.className = 'snooze-btn';
+    undoBtn.style.cssText = 'border-color:var(--accent);color:var(--accent)';
+    undoBtn.innerHTML = '&#8630; Undo';
+    undoBtn.onclick = function() { undoSnooze(jobId); };
+    var doneLabel = document.createElement('span');
+    doneLabel.style.cssText = 'font-size:11px;font-family:var(--mono);color:var(--green);font-weight:600';
+    doneLabel.innerHTML = '&#10003; Done!';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px';
+    wrap.appendChild(doneLabel);
+    wrap.appendChild(undoBtn);
+    btnContainer.innerHTML = '';
+    btnContainer.appendChild(wrap);
+  }
+  if (snoozeUndoTimers[jobId]) clearTimeout(snoozeUndoTimers[jobId]);
+  snoozeUndoTimers[jobId] = setTimeout(function() {
+    delete snoozeUndoTimers[jobId];
+    var timed = getSnoozedTimed();
+    timed[jobId] = Date.now() + days * 86400000;
+    localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
+    renderToday();
+    renderSnoozed();
+  }, 5000);
+}
+function undoSnooze(jobId) {
+  if (snoozeUndoTimers[jobId]) {
+    clearTimeout(snoozeUndoTimers[jobId]);
+    delete snoozeUndoTimers[jobId];
+  }
   renderToday();
-  renderSnoozed();
 }
 function isSnoozed(jobId) {
   return getSnoozed().indexOf(jobId) >= 0 || isSnoozedTimed(jobId);
