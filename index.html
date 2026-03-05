@@ -1961,8 +1961,17 @@ function trackingBadgeHtml(trackingNumber, cached) {
   if (!trackingNumber) return '';
   if (cached) {
     var cls = trackingClass(cached.code);
-    var titleStr = (cached.location||'') + (cached.estimatedDelivery ? ' Est: '+cached.estimatedDelivery : '');
-  return '<span class="tracking-badge ' + cls + '" title="'+titleStr+'" data-tn="'+trackingNumber+'" onclick="fetchTracking(this.dataset.tn, this)">&#128230; ' + cached.status + '</span>';
+    var detail = '';
+  if (cached.code === 'DL' && cached.deliveredAt) {
+    var d = new Date(cached.deliveredAt);
+    detail = 'Delivered ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' at ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  } else if (cached.estimatedDelivery) {
+    var d = new Date(cached.estimatedDelivery);
+    detail = 'Est. ' + d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  } else if (cached.location) {
+    detail = cached.location;
+  }
+  return '<span class="tracking-badge ' + cls + '" data-tn="'+trackingNumber+'" onclick="fetchTracking(this.dataset.tn, this)">&#128230; ' + cached.status + (detail ? '<span style=\"font-weight:400;opacity:.75;margin-left:6px;font-size:10px\">' + detail + '</span>' : '') + '</span>';
   }
   return '<span class="tracking-badge track-pending" data-tn="'+trackingNumber+'" onclick="fetchTracking(this.dataset.tn, this)">&#128230; Track</span>';
 }
