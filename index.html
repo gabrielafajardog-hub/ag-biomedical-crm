@@ -334,7 +334,13 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
     </div>
     <!-- JOBS -->
     <div id="view-jobs">
-      <div class="page-header"><div><div class="page-title">Repair Jobs</div><div class="page-sub" id="jobs-subtitle">Loading...</div></div></div>
+      <div class="page-header"><div><div class="page-title">Repair Jobs</div><div class="page-sub" id="jobs-subtitle">Loading...</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="filter-open-btn" onclick="setClosedFilter('open')" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s">Open</button>
+          <button id="filter-closed-btn" onclick="setClosedFilter('closed')" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s">Closed</button>
+          <button id="filter-all-btn" onclick="setClosedFilter('all')" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s">All</button>
+        </div>
+      </div>
       <div class="filters-bar">
         <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" class="search-input" id="search-input" placeholder="Search anything — ID, model, serial, PO, vendor, notes, issue, tracking, technician..." oninput="filterJobs()"></div>
         <select class="filter-select" id="filter-type" onchange="filterJobs()">
@@ -343,7 +349,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         </select>
         <select class="filter-select" id="filter-status" onchange="filterJobs()">
           <option value="">All Status</option>
-          <option>Open</option><option>Estimating</option><option>Pending Approval</option><option>Approved w/ PO</option>
+          <option>Estimating</option><option>Pending Approval</option><option>Approved w/ PO</option>
           <option>Incoming</option><option>Ready waiting on PO</option><option>No Problem Found</option><option>On the Way (Unrepairable)</option>
           <option>Pending assignment</option><option>Completed</option>
         </select>
@@ -552,8 +558,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
             <label class="form-label">Status <span class="req">*</span></label>
             <select class="form-select" id="f-status">
               <option value="">Select status...</option>
-              <option>Open</option>
-              <option>Pending assignment</option>
+                            <option>Pending assignment</option>
               <option>Estimating</option>
               <option>Pending Approval</option>
               <option>Approved w/ PO</option>
@@ -692,7 +697,10 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
 
       <!-- SERVICE REPORT -->
       <div class="form-section">
-        <div class="form-section-title">&#128196; Service Report</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="form-section-title" style="margin-bottom:0">&#128196; Service Report</div>
+          <button onclick="generateServiceReport()" style="background:var(--surface);color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 16px;font-size:11px;font-weight:500;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all .2s" onmouseover="this.style.background='var(--accent-soft)'" onmouseout="this.style.background='var(--surface)'">&#128196; Generate Report</button>
+        </div>
         <div class="form-grid">
           <div class="form-field full">
             <label class="form-label">Repair Description</label>
@@ -725,17 +733,15 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         <div class="comment-box">
         <textarea id="comment-input" class="comment-input" placeholder="Add a comment... use @name to notify someone" oninput="handleCommentInput(event)" rows="2"></textarea>
         <div class="comment-footer">
-          <label class="comment-private-toggle">
-            <input type="checkbox" id="comment-private" style="accent-color:var(--accent)"> Private
-          </label>
-          <button onclick="submitComment()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer">Post</button>
+
+          <button onclick="submitComment()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer">Send</button>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn-delete" id="btn-delete-job" onclick="deleteCurrentJob()" style="display:none">Delete Job</button>
+      <button id="btn-close-job" onclick="toggleCloseJob()" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 20px;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all .2s;color:var(--text-muted)">&#10003; Close Request</button>
       <button class="btn-cancel" onclick="closeModal('job-modal')">Cancel</button>
-      <button id="btn-report" onclick="generateServiceReport()" style="background:var(--surface);color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px 20px;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all .2s" onmouseover="this.style.background='var(--accent-soft)'" onmouseout="this.style.background='var(--surface)'">&#128196; Service Report</button>
       <button class="btn-save" onclick="saveJob()">Save Request</button>
     </div>
   </div>
@@ -1078,6 +1084,8 @@ function filterJobs() {
   var mfr=document.getElementById('filter-mfr').value;
   var facility=document.getElementById('filter-facility').value;
   filteredJobs=jobs.filter(function(j){
+    if (closedFilter === 'open' && j.closed) return false;
+    if (closedFilter === 'closed' && !j.closed) return false;
     var match=!q||Object.values(j).some(function(v){return typeof v==='string'&&v.toLowerCase().indexOf(q)>=0;});
     return match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
   });
@@ -1318,6 +1326,7 @@ function openEditJobModal(id) {
   closeModal('detail-modal');
   applyRoleToForm();
   document.getElementById('job-modal').classList.add('open');
+  updateCloseBtn(j.closed || false);
   renderComments(id);
   var ci = document.getElementById('comment-input');
   if(ci) ci.value = '';
@@ -1429,8 +1438,7 @@ function saveJob() {
 // ─── DETAIL MODAL ────────────────────────────────────────────────────────────
 function submitComment() {
   var text = document.getElementById('comment-input').value;
-  var isPrivate = document.getElementById('comment-private').checked;
-  if (text.trim()) addComment(currentDetailId, text, isPrivate);
+  if (text.trim()) addComment(currentDetailId, text, false);
 }
 
 function openDetail(id) {
@@ -1986,35 +1994,55 @@ async function fetchTracking(trackingNumber, el) {
   // Show loading
   if (el) { el.className = 'tracking-badge track-pending track-loading'; el.textContent = '⏳ Checking...'; }
 
-  try {
-    var res = await fetch('/.netlify/functions/fedex-track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trackingNumber: trackingNumber })
-    });
-    var data = await res.json();
+  fetch('/.netlify/functions/fedex-track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ trackingNumber: trackingNumber })
+  }).then(function(res) { return res.json(); }).then(function(data) {
 
-    if (data.error) throw new Error(data.error);
+    if (data.error) {
+      if (el) {
+        el.className = 'tracking-badge track-pending';
+        el.innerHTML = '&#128230; Track on FedEx &#8599;';
+        el.style.cursor = 'pointer';
+        el.onclick = function() { window.open('https://www.fedex.com/fedextrack/?trknbr=' + trackingNumber, '_blank'); };
+      }
+      return;
+    }
 
     trackingCache[trackingNumber] = data;
 
     var cls = trackingClass(data.code);
-    var title = (data.location || '') + (data.estimatedDelivery ? ' · Est: ' + new Date(data.estimatedDelivery).toLocaleDateString() : '');
-    if (el) {
-      el.className = 'tracking-badge ' + cls;
-      el.textContent = '📦 ' + data.status;
-      el.title = title;
+    var detail = '';
+    if (data.code === 'DL' && data.deliveredAt) {
+      var d = new Date(data.deliveredAt);
+      detail = 'Delivered ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' at ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    } else if (data.estimatedDelivery) {
+      var d = new Date(data.estimatedDelivery);
+      detail = 'Est. ' + d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    } else if (data.location) {
+      detail = data.location;
     }
 
-    // If delivered, mark on Today tab
+    if (el) {
+      el.className = 'tracking-badge ' + cls;
+      el.innerHTML = '&#128230; ' + data.status + (detail ? '<span style="font-weight:400;opacity:.75;margin-left:6px;font-size:10px">' + detail + '</span>' : '');
+      el.onclick = function() { fetchTracking(trackingNumber, el); };
+    }
+
     if (data.code === 'DL') {
       console.log('Package delivered:', trackingNumber);
     }
 
-  } catch(err) {
+  }).catch(function(err) {
     console.error('Tracking error:', err);
-    if (el) { el.className = 'tracking-badge track-error'; el.textContent = '⚠ Error'; el.title = err.message; }
-  }
+    if (el) {
+      el.className = 'tracking-badge track-pending';
+      el.innerHTML = '&#128230; Track on FedEx &#8599;';
+      el.style.cursor = 'pointer';
+      el.onclick = function() { window.open('https://www.fedex.com/fedextrack/?trknbr=' + trackingNumber, '_blank'); };
+    }
+  });
 }
 
 function autoFetchTracking() {
@@ -2024,6 +2052,51 @@ function autoFetchTracking() {
       fetchTracking(j.tracking, null);
     }
   });
+}
+
+// ─── CLOSE / REOPEN JOB ─────────────────────────────────────────────────────
+var closedFilter = 'open'; // 'open', 'closed', 'all'
+
+function setClosedFilter(val) {
+  closedFilter = val;
+  ['open','closed','all'].forEach(function(v) {
+    var btn = document.getElementById('filter-' + v + '-btn');
+    if (!btn) return;
+    if (v === val) {
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+      btn.style.border = 'none';
+    } else {
+      btn.style.background = 'var(--surface2)';
+      btn.style.color = 'var(--text-muted)';
+      btn.style.border = '1px solid var(--border)';
+    }
+  });
+  filterJobs();
+}
+
+function toggleCloseJob() {
+  if (!editingJobId) return;
+  var j = jobs.find(function(x){ return x.id === editingJobId; });
+  if (!j) return;
+  j.closed = !j.closed;
+  saveJobs();
+  updateCloseBtn(j.closed);
+  filterJobs();
+}
+
+function updateCloseBtn(isClosed) {
+  var btn = document.getElementById('btn-close-job');
+  if (!btn) return;
+  if (isClosed) {
+    btn.textContent = '↩ Reopen Request';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+  } else {
+    btn.textContent = '✓ Close Request';
+    btn.style.color = 'var(--text-muted)';
+    btn.style.borderColor = 'var(--border)';
+  }
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
