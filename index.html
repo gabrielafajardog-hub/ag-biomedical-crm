@@ -1747,7 +1747,14 @@ function renderToday() {
     var threshold = STALE_RULES[s];
 
     // Estimating > 3 days
+    // If outsourced to vendor and FedEx shows delivered, use delivery date + 4 day threshold
     if (s === 'Estimating' && days >= 3) {
+      var tcache = j.tracking && trackingCache[j.tracking];
+      if ((j.vendorRepair || j.vendorParts) && j.tracking && tcache && tcache.code === 'DL' && tcache.deliveredAt) {
+        var daysSinceDelivery = Math.floor((Date.now() - new Date(tcache.deliveredAt)) / 86400000);
+        if (daysSinceDelivery < 4) return; // delivered recently, give vendor 4 days
+        days = daysSinceDelivery;
+      }
       needsEstimate.push({j:j, days:days});
     }
     // Pending Approval > 7 days
