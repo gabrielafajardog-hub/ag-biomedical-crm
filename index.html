@@ -1282,6 +1282,7 @@ function openEditJobModal(id) {
   document.getElementById('f-notes-rep').value=j.notesRep||'';
   document.getElementById('f-notes-internal').value=j.notesInternal||'';
   document.getElementById('f-repair-desc').value=j.repairDesc||'';
+  document.getElementById('f-tech-notes').value=j.techNotes||'';
   document.getElementById('f-received-vendor').value=j.receivedVendor||'';
   document.getElementById('f-repaired').value=j.repairedDate||'';
   document.getElementById('f-completed-by').value=j.completedBy||'';
@@ -1389,6 +1390,7 @@ function saveJob() {
     notesRep:document.getElementById('f-notes-rep').value.trim(),
     notesInternal:document.getElementById('f-notes-internal').value.trim(),
     repairDesc:document.getElementById('f-repair-desc').value.trim(),
+    techNotes:document.getElementById('f-tech-notes').value.trim(),
     receivedVendor:document.getElementById('f-received-vendor').value,
     repairedDate:document.getElementById('f-repaired').value,
     completedBy:document.getElementById('f-completed-by').value,
