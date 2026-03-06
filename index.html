@@ -622,6 +622,8 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
             <input type="text" class="form-input" id="f-est" placeholder="Est #" style="margin-bottom:12px">
             <label class="form-label">Invoice #</label>
             <input type="text" class="form-input" id="f-inv" placeholder="Inv #" style="margin-bottom:12px">
+            <label class="form-label">Tracking (to Customer)</label>
+            <input type="text" class="form-input" id="f-tracking-out" placeholder="FedEx tracking #" style="margin-bottom:12px">
             <label class="form-label">PO Number</label>
             <input type="text" class="form-input" id="f-po" placeholder="PO #">
           </div>
@@ -1409,6 +1411,7 @@ function openEditJobModal(id) {
   document.getElementById('f-est').value=j.est||'';
 
   document.getElementById('f-inv').value=j.inv||'';
+  document.getElementById('f-tracking-out').value=j.trackingOut||'';
 
   document.getElementById('f-vendor-parts').value=j.vendorParts||'';
   document.getElementById('f-order-parts').value=j.orderParts||'';
@@ -1517,6 +1520,7 @@ function saveJob() {
     est:document.getElementById('f-est').value.trim(),
     estCost:'',
     inv:document.getElementById('f-inv').value.trim(),
+    trackingOut:document.getElementById('f-tracking-out').value.trim(),
     invCost:'',
     price:'',
     vendorParts:document.getElementById('f-vendor-parts').value.trim(),
@@ -1590,7 +1594,7 @@ function openDetail(id) {
 
   if(!isHidden('billing')){body+='<div class="detail-section"><div class="detail-section-title">&#128179; Billing &amp; PO</div>';
   body+=row('Estimate #',j.est,'PO Number',j.po);
-  body+=row('Invoice #',j.inv,'','');
+  body+=row('Invoice #',j.inv,'Tracking (to Customer)',j.trackingOut);
   body+='</div>';}
 
   var hasVendor=j.vendorParts||j.orderParts||j.vendorRepair||j.vendorQuote||j.vendorPO||j.tracking||j.link;
@@ -2726,13 +2730,12 @@ async function createFedExLabel() {
     var data = await resp.json();
 
     if (data.trackingNumber && data.labelUrl) {
-      // Save tracking number to job
+      // Save tracking number to trackingOut field on the job
       if (currentLabelJob) {
-        currentLabelJob.tracking = data.trackingNumber;
         var idx = jobs.findIndex(function(j){return j.id===currentLabelJob.id;});
         if (idx >= 0) {
-          jobs[idx].tracking = data.trackingNumber;
-          saveJobs();
+          jobs[idx].trackingOut = data.trackingNumber;
+          currentLabelJob.trackingOut = data.trackingNumber;
         }
       }
       statusEl.innerHTML = '<span style="color:#27ae60">&#10003; Label created! Tracking: <strong>' + esc(data.trackingNumber) + '</strong></span>';
