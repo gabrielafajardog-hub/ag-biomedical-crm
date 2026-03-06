@@ -423,6 +423,8 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
     <!-- TODAY VIEW -->
     <div id="view-today" class="view-hidden">
       <div class="page-header"><div><div class="page-title">&#9889; Today's Focus</div><div class="page-sub" id="today-date"></div></div></div>
+      <!-- FILTER BUTTONS -->
+      <div id="today-filter-bar" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 24px 20px"></div>
       <div style="max-width:900px;padding:0 24px 24px">
         <div id="today-needs-estimate" style="display:none">
           <div class="today-section-title">&#128196; Needs Estimate <span id="count-estimate" class="today-count"></span></div>
@@ -1706,7 +1708,7 @@ function renderSnoozed() {
       '<div><div class="snoozed-card-id">WO-'+esc(j.id)+'</div></div>' +
       '<div>' +
         '<div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(j.manufacturer||'')+' '+esc(j.model||'')+'</div>' +
-        '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">'+esc(j.facility||'')+' &middot; '+esc(j.status||'')+(days<999?' &middot; '+days+'d old':'')+'</div>' +
+        '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">'+esc(j.facility||'')+' &middot; '+esc(j.status||'')+(j.est?' &middot; <span style="font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600">Est #'+esc(j.est)+'</span>':'')+(days<999?' &middot; '+days+'d old':'')+'</div>' +
       '</div>' +
       '<button class="snooze-btn snoozed" data-id="'+esc(j.id)+'" onclick="toggleSnooze(this.dataset.id)">&#10003; Snoozed — Undo</button>' +
     '</div>';
@@ -1746,7 +1748,27 @@ function todayCardHtml(j, days, threshold, flag) {
     '<div style="cursor:pointer" data-id="'+esc(j.id)+'" onclick="openEditJobModal(this.dataset.id)">' +
       '<div class="today-card-info">' + esc(j.manufacturer||'') + ' ' + esc(j.model||'') + '</div>' +
       '<div class="today-card-sub">' + esc(j.facility||'') + (j.technician ? ' &middot; ' + esc(j.technician) : '') + '</div>' +
-      '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;font-style:italic">' + esc(j.status) + '</div>' +
+      '<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-style:italic">' + esc(j.status) + '</div>' +
+      '<div style="font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px">' +
+        (j.est ? '<span style="font-family:var(--mono);color:var(--accent);font-weight:600;font-style:normal">Est #' + esc(j.est) + '</span>' : '') +
+        (j.vendorPO ? '<span style="font-family:var(--mono);color:var(--text-muted);font-style:normal">VPO: ' + esc(j.vendorPO) + '</span>' : '') +
+        (j.tracking ? (function() {
+          var tc = trackingCache[j.tracking];
+          var badgeCls = tc ? 'tracking-badge ' + trackingClass(tc.code) : 'tracking-badge track-pending';
+          var detail = '';
+          if (tc && tc.code === 'DL' && tc.deliveredAt) {
+            var d = new Date(tc.deliveredAt);
+            detail = ' &middot; Delivered ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' at ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+          } else if (tc && tc.estimatedDelivery) {
+            var d = new Date(tc.estimatedDelivery);
+            detail = ' &middot; Est. ' + d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+          } else if (tc && tc.location) {
+            detail = ' &middot; ' + tc.location;
+          }
+          var label = tc ? ('&#128230; ' + esc(tc.status) + detail) : ('&#128230; ' + esc(j.tracking));
+          return '<span id="tcard-trk-' + esc(j.id) + '" class="' + badgeCls + '" style="font-style:normal;cursor:pointer" onclick="fetchTracking(\'' + esc(j.tracking) + '\',document.getElementById(\'tcard-trk-' + esc(j.id) + '\'))">' + label + '</span>';
+        })() : '') +
+      '</div>' +
     '</div>' +
     '<div class="today-card-right">' +
       '<div class="today-days ' + cls + '">' + daysLabel + '</div>' +
@@ -1830,8 +1852,69 @@ function renderToday() {
   if (total > 0) { badge.textContent = total; badge.style.display = 'inline-block'; }
   else { badge.style.display = 'none'; }
 
+  // Build filter buttons
+  var SECTIONS = [
+    { id: 'today-needs-estimate',  label: '&#128196; Needs Estimate',           count: needsEstimate.length },
+    { id: 'today-pending-approval',label: '&#9203; Pending Approval',           count: pendingApproval.length },
+    { id: 'today-approved-waiting',label: '&#128230; Approved — Waiting',       count: approvedWaiting.length },
+    { id: 'today-no-vendor',       label: '&#127981; No Vendor',                count: noVendor.length },
+  ];
+  buildTodayFilters(SECTIONS);
+  applyTodayFilter(activeTodayFilter, SECTIONS);
+
   // Auto-fetch tracking for all jobs with tracking numbers
   autoFetchTracking();
+}
+
+var activeTodayFilter = null;
+
+function buildTodayFilters(sections) {
+  var bar = document.getElementById('today-filter-bar');
+  if (!bar) return;
+  // All button
+  var allActive = activeTodayFilter === null;
+  var btns = '<button onclick="setTodayFilter(null)" style="' + todayFilterStyle(allActive) + '">All <span style="' + todayCountStyle(allActive) + '">' + sections.reduce(function(s,x){return s+x.count;},0) + '</span></button>';
+  sections.forEach(function(s) {
+    if (!s.count) return;
+    var active = activeTodayFilter === s.id;
+    btns += '<button onclick="setTodayFilter(\'' + s.id + '\')" style="' + todayFilterStyle(active) + '">' + s.label + ' <span style="' + todayCountStyle(active) + '">' + s.count + '</span></button>';
+  });
+  bar.innerHTML = btns;
+}
+
+function todayFilterStyle(active) {
+  if (active) return 'background:var(--accent);color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s;font-weight:600';
+  return 'background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:20px;padding:7px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s';
+}
+
+function todayCountStyle(active) {
+  if (active) return 'background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;margin-left:4px;font-size:11px';
+  return 'background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1px 7px;margin-left:4px;font-size:11px;color:var(--accent)';
+}
+
+function setTodayFilter(sectionId) {
+  activeTodayFilter = sectionId;
+  var SECTIONS = [
+    { id: 'today-needs-estimate',   count: parseInt(document.getElementById('count-estimate').textContent)||0 },
+    { id: 'today-pending-approval', count: parseInt(document.getElementById('count-pending-approval').textContent)||0 },
+    { id: 'today-approved-waiting', count: parseInt(document.getElementById('count-approved-waiting').textContent)||0 },
+    { id: 'today-no-vendor',        count: parseInt(document.getElementById('count-no-vendor').textContent)||0 },
+  ];
+  buildTodayFilters(SECTIONS);
+  applyTodayFilter(sectionId, SECTIONS);
+}
+
+function applyTodayFilter(sectionId, sections) {
+  sections.forEach(function(s) {
+    var el = document.getElementById(s.id);
+    if (!el) return;
+    if (sectionId === null) {
+      // Show all that have content
+      el.style.display = s.count ? 'block' : 'none';
+    } else {
+      el.style.display = (s.id === sectionId && s.count) ? 'block' : 'none';
+    }
+  });
 }
 
 // Add urgency row highlighting after table renders
@@ -2244,8 +2327,26 @@ async function fetchTracking(trackingNumber, el) {
 function autoFetchTracking() {
   // Auto-fetch all jobs with tracking numbers on Today tab
   jobs.forEach(function(j) {
-    if (j.tracking && !trackingCache[j.tracking]) {
-      fetchTracking(j.tracking, null);
+    if (!j.tracking) return;
+    var cardEl = document.getElementById('tcard-trk-' + j.id);
+    if (!trackingCache[j.tracking]) {
+      fetchTracking(j.tracking, cardEl || null);
+    } else if (cardEl) {
+      // Cache already has it — update badge immediately
+      var tc = trackingCache[j.tracking];
+      var cls = trackingClass(tc.code);
+      var detail = '';
+      if (tc.code === 'DL' && tc.deliveredAt) {
+        var d = new Date(tc.deliveredAt);
+        detail = '<span style="font-weight:400;opacity:.75;margin-left:6px;font-size:10px">Delivered ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' at ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) + '</span>';
+      } else if (tc.estimatedDelivery) {
+        var d = new Date(tc.estimatedDelivery);
+        detail = '<span style="font-weight:400;opacity:.75;margin-left:6px;font-size:10px">Est. ' + d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) + '</span>';
+      } else if (tc.location) {
+        detail = '<span style="font-weight:400;opacity:.75;margin-left:6px;font-size:10px">' + tc.location + '</span>';
+      }
+      cardEl.className = 'tracking-badge ' + cls;
+      cardEl.innerHTML = '&#128230; ' + tc.status + detail;
     }
   });
 }
