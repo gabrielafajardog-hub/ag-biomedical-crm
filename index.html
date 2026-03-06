@@ -1895,10 +1895,10 @@ function todayCountStyle(active) {
 function setTodayFilter(sectionId) {
   activeTodayFilter = sectionId;
   var SECTIONS = [
-    { id: 'today-needs-estimate',   count: parseInt(document.getElementById('count-estimate').textContent)||0 },
-    { id: 'today-pending-approval', count: parseInt(document.getElementById('count-pending-approval').textContent)||0 },
-    { id: 'today-approved-waiting', count: parseInt(document.getElementById('count-approved-waiting').textContent)||0 },
-    { id: 'today-no-vendor',        count: parseInt(document.getElementById('count-no-vendor').textContent)||0 },
+    { id: 'today-needs-estimate',   label: '&#128196; Needs Estimate',     count: parseInt(document.getElementById('count-estimate').textContent)||0 },
+    { id: 'today-pending-approval', label: '&#9203; Pending Approval',     count: parseInt(document.getElementById('count-pending-approval').textContent)||0 },
+    { id: 'today-approved-waiting', label: '&#128230; Approved — Waiting', count: parseInt(document.getElementById('count-approved-waiting').textContent)||0 },
+    { id: 'today-no-vendor',        label: '&#127981; No Vendor',          count: parseInt(document.getElementById('count-no-vendor').textContent)||0 },
   ];
   buildTodayFilters(SECTIONS);
   applyTodayFilter(sectionId, SECTIONS);
