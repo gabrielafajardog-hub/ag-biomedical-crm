@@ -860,11 +860,25 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         <div class="form-field"><label class="form-label">ZIP</label><input class="form-input" id="lbl-zip" placeholder="33606"></div>
         <div class="form-field"><label class="form-label">Phone</label><input class="form-input" id="lbl-phone" placeholder="5551234567"></div>
         <div class="form-field"><label class="form-label">Service</label>
-          <select class="form-select" id="lbl-service">
+          <select class="form-select" id="lbl-service" onchange="handleLabelServiceChange()">
             <option value="FEDEX_GROUND">FedEx Ground</option>
             <option value="PRIORITY_OVERNIGHT">Priority Overnight</option>
             <option value="STANDARD_OVERNIGHT">Standard Overnight</option>
-            <option value="FEDEX_2_DAY">2 Day</option>
+            <option value="FEDEX_2_DAY">FedEx 2Day</option>
+            <option value="FEDEX_EXPRESS_SAVER">FedEx Express Saver</option>
+          </select>
+        </div>
+        <div class="form-field" id="lbl-onerate-wrap" style="display:none">
+          <label class="form-label">One Rate Box Size</label>
+          <select class="form-select" id="lbl-box-size">
+            <option value="FEDEX_ENVELOPE">FedEx Envelope</option>
+            <option value="FEDEX_EXTRA_LARGE_BOX">Extra Large Box</option>
+            <option value="FEDEX_EXTRA_SMALL_BOX">Extra Small Box</option>
+            <option value="FEDEX_LARGE_BOX">Large Box</option>
+            <option value="FEDEX_MEDIUM_BOX" selected>Medium Box</option>
+            <option value="FEDEX_PAK">FedEx Pak</option>
+            <option value="FEDEX_SMALL_BOX">Small Box</option>
+            <option value="FEDEX_TUBE">FedEx Tube</option>
           </select>
         </div>
         <div class="form-field"><label class="form-label">Weight (lbs)</label><input class="form-input" id="lbl-weight" type="number" placeholder="5" value="5" min="1"></div>
@@ -1193,6 +1207,15 @@ function populateFilters() {
   msel.innerHTML='<option value="">All Manufacturers</option>'+mfrs.map(function(m){return '<option value="'+esc(m)+'"'+(m===mcur?' selected':'')+'>'+esc(m)+'</option>';}).join('');
   var fsel=document.getElementById('filter-facility'),fcur=fsel.value;
   fsel.innerHTML='<option value="">All Facilities</option>'+facils.map(function(f){return '<option value="'+esc(f)+'"'+(f===fcur?' selected':'')+'>'+esc(f)+'</option>';}).join('');
+  // Restore persisted filters if no current selection
+  try {
+    var saved = JSON.parse(localStorage.getItem('crm_filters') || '{}');
+    if (!fcur && saved.facility) { fsel.value = saved.facility; }
+    if (!mcur && saved.mfr) { msel.value = saved.mfr; }
+    if (saved.type && !document.getElementById('filter-type').value) document.getElementById('filter-type').value = saved.type;
+    if (saved.status && !document.getElementById('filter-status').value) document.getElementById('filter-status').value = saved.status;
+    if (saved.q && !document.getElementById('search-input').value) document.getElementById('search-input').value = saved.q;
+  } catch(e){}
 }
 
 function filterJobs() {
@@ -1201,6 +1224,8 @@ function filterJobs() {
   var status=document.getElementById('filter-status').value;
   var mfr=document.getElementById('filter-mfr').value;
   var facility=document.getElementById('filter-facility').value;
+  // Persist filter state
+  try { localStorage.setItem('crm_filters', JSON.stringify({q:q,type:type,status:status,mfr:mfr,facility:facility})); } catch(e){}
   filteredJobs=jobs.filter(function(j){
     if (closedFilter === 'open' && j.closed) return false;
     if (closedFilter === 'closed' && !j.closed) return false;
@@ -2682,6 +2707,12 @@ function openLabelForm(mode) {
   document.getElementById('label-modal').classList.add('open');
 }
 
+function handleLabelServiceChange() {
+  var service = document.getElementById('lbl-service').value;
+  var isExpress = ['PRIORITY_OVERNIGHT','STANDARD_OVERNIGHT','FEDEX_2_DAY','FEDEX_EXPRESS_SAVER'].includes(service);
+  document.getElementById('lbl-onerate-wrap').style.display = isExpress ? 'block' : 'none';
+}
+
 async function createFedExLabel() {
   var name    = document.getElementById('lbl-name').value.trim();
   var company = document.getElementById('lbl-company').value.trim();
@@ -2693,6 +2724,8 @@ async function createFedExLabel() {
   var service = document.getElementById('lbl-service').value;
   var weight  = parseFloat(document.getElementById('lbl-weight').value) || 5;
   var desc    = document.getElementById('lbl-desc').value.trim() || 'Medical Equipment';
+  var isExpress = ['PRIORITY_OVERNIGHT','STANDARD_OVERNIGHT','FEDEX_2_DAY','FEDEX_EXPRESS_SAVER'].includes(service);
+  var boxSize = isExpress ? document.getElementById('lbl-box-size').value : null;
   var statusEl = document.getElementById('label-status');
 
   if (!street || !city || !state || !zip) {
@@ -2718,6 +2751,8 @@ async function createFedExLabel() {
     service: service,
     weight: weight,
     description: desc,
+    oneRate: isExpress,
+    boxSize: boxSize,
     jobId: currentLabelJob ? currentLabelJob.id : ''
   };
 
@@ -2741,7 +2776,7 @@ async function createFedExLabel() {
       statusEl.innerHTML = '<span style="color:#27ae60">&#10003; Label created! Tracking: <strong>' + esc(data.trackingNumber) + '</strong></span>';
       btn.textContent = '✓ Done';
       window.open(data.labelUrl, '_blank');
-      setTimeout(function(){ closeModal('label-modal'); renderAll(); }, 2000);
+      setTimeout(function(){ closeModal('label-modal'); }, 2000);
     } else {
       var msg = data.error || (data.errors && data.errors[0] && data.errors[0].message) || JSON.stringify(data);
       statusEl.innerHTML = '<span style="color:#e74c3c">Error: ' + esc(msg) + '</span>';
