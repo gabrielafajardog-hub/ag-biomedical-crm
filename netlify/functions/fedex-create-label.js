@@ -66,10 +66,10 @@ exports.handler = async (event) => {
             companyName: 'A&G Biomedical'
           },
           address: {
-            streetLines: ['8250 NW 27th St', 'Suite 201'],
-            city: 'Miami',
+            streetLines: ['3382 NW 151st Terr'],
+            city: 'Miami Gardens',
             stateOrProvinceCode: 'FL',
-            postalCode: '33122',
+            postalCode: '33054',
             countryCode: 'US'
           }
         },
