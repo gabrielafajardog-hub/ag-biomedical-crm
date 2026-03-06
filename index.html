@@ -801,6 +801,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
     <div class="modal-footer">
       <button class="btn-delete" onclick="deleteCurrentJob()">Delete Job</button>
       <div style="display:flex;gap:10px;align-items:center">
+        <button onclick="openLabelModal()" style="background:#4a1d52;color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:6px">&#9992; FedEx Label</button>
         <select class="form-select" id="status-sel" style="width:220px"></select>
         <button class="btn-save" onclick="updateStatus()">Update Status</button>
       </div>
@@ -808,6 +809,72 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
   </div>
 </div>
 
+
+<!-- FedEx Label Modal — Mode Picker -->
+<div class="modal-overlay" id="label-mode-modal">
+  <div class="modal" style="width:420px">
+    <div class="modal-header">
+      <div><div class="modal-title">&#9992; Create FedEx Label</div><div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-top:2px">Ship from: 3382 NW 151st Terr, Miami Gardens FL 33054</div></div>
+      <div class="modal-close" onclick="closeModal('label-mode-modal')">&#10005;</div>
+    </div>
+    <div class="modal-body" style="padding:28px 24px">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;text-align:center">What are you shipping?</div>
+      <div style="display:flex;gap:14px;justify-content:center">
+        <button onclick="openLabelForm('vendor')" style="flex:1;padding:18px 12px;border:2px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:8px" onmouseover="this.style.borderColor='#4a1d52';this.style.background='#f9f4fa'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:26px">&#128230;</span>
+          <span>Ship to Vendor</span>
+          <span style="font-size:10px;font-weight:400;color:var(--text-muted)">Outsourcing a repair</span>
+        </button>
+        <button onclick="openLabelForm('customer')" style="flex:1;padding:18px 12px;border:2px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:8px" onmouseover="this.style.borderColor='#4a1d52';this.style.background='#f9f4fa'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:26px">&#127968;</span>
+          <span>Return to Customer</span>
+          <span style="font-size:10px;font-weight:400;color:var(--text-muted)">Sending back repaired equipment</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FedEx Label Modal — Form -->
+<div class="modal-overlay" id="label-modal">
+  <div class="modal" style="width:520px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="label-modal-title">&#9992; Create FedEx Label</div>
+        <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-top:2px" id="label-modal-sub">Ship from: 3382 NW 151st Terr, Miami Gardens FL 33054</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('label-modal')">&#10005;</div>
+    </div>
+    <div class="modal-body">
+      <!-- Pre-filled info banner -->
+      <div id="label-prefill-banner" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text-muted);display:none"></div>
+      <div class="form-grid">
+        <div class="form-field full"><label class="form-label">Recipient Name / Attn</label><input class="form-input" id="lbl-name" placeholder="e.g. Repair Dept / John Smith"></div>
+        <div class="form-field full"><label class="form-label">Company</label><input class="form-input" id="lbl-company" placeholder="e.g. Tampa General Hospital"></div>
+        <div class="form-field full"><label class="form-label">Street Address</label><input class="form-input" id="lbl-street" placeholder="e.g. 1 Davis Blvd"></div>
+        <div class="form-field"><label class="form-label">City</label><input class="form-input" id="lbl-city" placeholder="e.g. Tampa"></div>
+        <div class="form-field"><label class="form-label">State</label><input class="form-input" id="lbl-state" placeholder="FL" maxlength="2" style="text-transform:uppercase"></div>
+        <div class="form-field"><label class="form-label">ZIP</label><input class="form-input" id="lbl-zip" placeholder="33606"></div>
+        <div class="form-field"><label class="form-label">Phone</label><input class="form-input" id="lbl-phone" placeholder="5551234567"></div>
+        <div class="form-field"><label class="form-label">Service</label>
+          <select class="form-select" id="lbl-service">
+            <option value="FEDEX_GROUND">FedEx Ground</option>
+            <option value="PRIORITY_OVERNIGHT">Priority Overnight</option>
+            <option value="STANDARD_OVERNIGHT">Standard Overnight</option>
+            <option value="FEDEX_2_DAY">2 Day</option>
+          </select>
+        </div>
+        <div class="form-field"><label class="form-label">Weight (lbs)</label><input class="form-input" id="lbl-weight" type="number" placeholder="5" value="5" min="1"></div>
+        <div class="form-field full"><label class="form-label">Description / Reference</label><input class="form-input" id="lbl-desc" placeholder="Medical Equipment"></div>
+      </div>
+      <div id="label-status" style="margin-top:12px;font-size:12px;color:var(--text-muted);min-height:20px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('label-modal')">Cancel</button>
+      <button class="btn-save" id="btn-create-label" onclick="createFedExLabel()">&#9992; Create Label</button>
+    </div>
+  </div>
+</div>
 <!-- ═══════════════════════════════════════════════════════ NEW CUSTOMER MODAL -->
 <div class="modal-overlay" id="new-customer-modal">
   <div class="modal" style="width:500px">
@@ -2513,6 +2580,158 @@ function updateCloseBtn(isClosed) {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 (function(){var u=localStorage.getItem('crm_user');var r=localStorage.getItem('crm_role');if(u&&r&&USERS[u]) showApp(u,r);})();
+
+// ═══════════════════════════════════════════════════════════════
+// FEDEX LABEL CREATION
+// ═══════════════════════════════════════════════════════════════
+var currentLabelJob = null;
+
+function openLabelModal() {
+  var j = jobs.find(function(x){return x.id===currentDetailId;});
+  if (!j) return;
+  currentLabelJob = j;
+  // Reset and show mode picker
+  document.getElementById('label-mode-modal').classList.add('open');
+}
+
+function openLabelForm(mode) {
+  var j = currentLabelJob;
+  if (!j) return;
+
+  // Close mode picker
+  closeModal('label-mode-modal');
+
+  // Clear form
+  ['lbl-name','lbl-company','lbl-street','lbl-city','lbl-state','lbl-zip','lbl-phone','lbl-desc'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('lbl-weight').value = '5';
+  document.getElementById('lbl-service').value = 'FEDEX_GROUND';
+  document.getElementById('label-status').innerHTML = '';
+  document.getElementById('btn-create-label').disabled = false;
+  document.getElementById('btn-create-label').textContent = '✈ Create Label';
+
+  var banner = document.getElementById('label-prefill-banner');
+  var desc = [j.manufacturer, j.model, j.serial ? ('S/N: ' + j.serial) : ''].filter(Boolean).join(' — ');
+
+  if (mode === 'vendor') {
+    // Ship to Vendor
+    document.getElementById('label-modal-title').textContent = '📦 Ship to Vendor';
+    document.getElementById('label-modal-sub').textContent = 'Ship from: 3382 NW 151st Terr, Miami Gardens FL 33054';
+
+    var vendorName = j.vendorRepair || '';
+    var vendorPO   = j.vendorPO || '';
+
+    document.getElementById('lbl-company').value = vendorName;
+    document.getElementById('lbl-desc').value = desc + (vendorPO ? ' | PO: ' + vendorPO : '');
+
+    // Build banner
+    var bannerParts = [];
+    if (vendorName) bannerParts.push('&#128230; <strong>Vendor:</strong> ' + esc(vendorName));
+    if (vendorPO)   bannerParts.push('&#128196; <strong>Vendor PO:</strong> ' + esc(vendorPO));
+    bannerParts.push('&#128736; <strong>Equipment:</strong> ' + esc(desc));
+    banner.innerHTML = bannerParts.join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+    banner.style.display = 'block';
+
+  } else {
+    // Return to Customer
+    document.getElementById('label-modal-title').textContent = '🏠 Return to Customer';
+    document.getElementById('label-modal-sub').textContent = 'Ship from: 3382 NW 151st Terr, Miami Gardens FL 33054';
+
+    var facility  = j.facility || '';
+    var tech      = j.technician || '';
+    var po        = j.po || '';
+
+    document.getElementById('lbl-company').value = facility;
+    document.getElementById('lbl-name').value = tech ? ('Attn: ' + tech) : '';
+    document.getElementById('lbl-desc').value = desc + (po ? ' | PO: ' + po : '');
+
+    // Build banner
+    var bannerParts = [];
+    if (facility) bannerParts.push('&#127968; <strong>Facility:</strong> ' + esc(facility));
+    if (tech)     bannerParts.push('&#128100; <strong>Technician:</strong> ' + esc(tech));
+    if (po)       bannerParts.push('&#128196; <strong>PO:</strong> ' + esc(po));
+    bannerParts.push('&#128736; <strong>Equipment:</strong> ' + esc(desc));
+    banner.innerHTML = bannerParts.join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+    banner.style.display = 'block';
+  }
+
+  document.getElementById('label-modal').classList.add('open');
+}
+
+async function createFedExLabel() {
+  var name    = document.getElementById('lbl-name').value.trim();
+  var company = document.getElementById('lbl-company').value.trim();
+  var street  = document.getElementById('lbl-street').value.trim();
+  var city    = document.getElementById('lbl-city').value.trim();
+  var state   = document.getElementById('lbl-state').value.trim().toUpperCase();
+  var zip     = document.getElementById('lbl-zip').value.trim();
+  var phone   = document.getElementById('lbl-phone').value.trim().replace(/\D/g,'');
+  var service = document.getElementById('lbl-service').value;
+  var weight  = parseFloat(document.getElementById('lbl-weight').value) || 5;
+  var desc    = document.getElementById('lbl-desc').value.trim() || 'Medical Equipment';
+  var statusEl = document.getElementById('label-status');
+
+  if (!street || !city || !state || !zip) {
+    statusEl.innerHTML = '<span style="color:#e74c3c">Please fill in the address fields (street, city, state, ZIP).</span>';
+    return;
+  }
+
+  var btn = document.getElementById('btn-create-label');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+  statusEl.innerHTML = '<span style="color:var(--text-muted)">Contacting FedEx...</span>';
+
+  var payload = {
+    recipient: {
+      name: name || company,
+      company: company,
+      phone: phone || '3055550000',
+      street: street,
+      city: city,
+      state: state,
+      zip: zip
+    },
+    service: service,
+    weight: weight,
+    description: desc,
+    jobId: currentLabelJob ? currentLabelJob.id : ''
+  };
+
+  try {
+    var resp = await fetch('/.netlify/functions/fedex-create-label', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    var data = await resp.json();
+
+    if (data.trackingNumber && data.labelUrl) {
+      // Save tracking number to job
+      if (currentLabelJob) {
+        currentLabelJob.tracking = data.trackingNumber;
+        var idx = jobs.findIndex(function(j){return j.id===currentLabelJob.id;});
+        if (idx >= 0) {
+          jobs[idx].tracking = data.trackingNumber;
+          saveJobs();
+        }
+      }
+      statusEl.innerHTML = '<span style="color:#27ae60">&#10003; Label created! Tracking: <strong>' + esc(data.trackingNumber) + '</strong></span>';
+      btn.textContent = '✓ Done';
+      window.open(data.labelUrl, '_blank');
+      setTimeout(function(){ closeModal('label-modal'); renderAll(); }, 2000);
+    } else {
+      var msg = data.error || (data.errors && data.errors[0] && data.errors[0].message) || JSON.stringify(data);
+      statusEl.innerHTML = '<span style="color:#e74c3c">Error: ' + esc(msg) + '</span>';
+      btn.disabled = false;
+      btn.textContent = '✈ Create Label';
+    }
+  } catch(err) {
+    statusEl.innerHTML = '<span style="color:#e74c3c">Network error: ' + esc(err.message) + '</span>';
+    btn.disabled = false;
+    btn.textContent = '✈ Create Label';
+  }
+}
 
 // ─── ROW + INLINE CLICK DELEGATION ──────────────────────────────────────────
 document.addEventListener('click',function(e){
