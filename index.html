@@ -783,6 +783,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
       <button class="btn-delete" id="btn-delete-job" onclick="deleteCurrentJob()" style="display:none">Delete Job</button>
       <button id="btn-close-job" onclick="toggleCloseJob()" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 20px;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all .2s;color:var(--text-muted)">&#10003; Close Request</button>
       <button class="btn-cancel" onclick="closeModal('job-modal')">Cancel</button>
+      <button onclick="openLabelModalFromEdit()" style="background:#4a1d52;color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;text-transform:uppercase">&#9992; FedEx Label</button>
       <button class="btn-save" onclick="saveJob()">Save Request</button>
     </div>
   </div>
@@ -2585,6 +2586,24 @@ function updateCloseBtn(isClosed) {
 // FEDEX LABEL CREATION
 // ═══════════════════════════════════════════════════════════════
 var currentLabelJob = null;
+
+function openLabelModalFromEdit() {
+  // Build a job object from the currently open edit form
+  var j = {
+    id:          editingJobId || '',
+    facility:    document.getElementById('f-facility') ? document.getElementById('f-facility').value : '',
+    technician:  document.getElementById('f-technician') ? document.getElementById('f-technician').value : '',
+    manufacturer:document.getElementById('f-manufacturer') ? document.getElementById('f-manufacturer').value : '',
+    model:       document.getElementById('f-model') ? document.getElementById('f-model').value : '',
+    serial:      document.getElementById('f-serial') ? document.getElementById('f-serial').value : '',
+    po:          document.getElementById('f-po') ? document.getElementById('f-po').value : '',
+    vendorRepair:document.getElementById('f-vendor-repair') ? document.getElementById('f-vendor-repair').value : '',
+    vendorPO:    document.getElementById('f-vendor-po') ? document.getElementById('f-vendor-po').value : ''
+  };
+  currentLabelJob = j;
+  currentDetailId = j.id;
+  document.getElementById('label-mode-modal').classList.add('open');
+}
 
 function openLabelModal() {
   var j = jobs.find(function(x){return x.id===currentDetailId;});
