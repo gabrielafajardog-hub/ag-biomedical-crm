@@ -11,11 +11,12 @@ async function getToken() {
     body: `grant_type=client_credentials&client_id=${FEDEX_API_KEY}&client_secret=${FEDEX_SECRET_KEY}`
   });
   const data = await res.json();
-  if (!data.access_token) throw new Error('Failed to get FedEx token: ' + JSON.stringify(data));
+  if (!data.access_token) throw new Error('FedEx auth failed: ' + JSON.stringify(data));
   return data.access_token;
 }
 
 exports.handler = async (event) => {
+  // CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -38,23 +39,30 @@ exports.handler = async (event) => {
   };
 
   try {
-    const {
-      jobId,
-      facilityName,
-      recipientName,
-      recipientPhone,
-      street,
-      city,
-      state,
-      zip,
-      serviceType,
-      weight,
-      length,
-      width,
-      height
-    } = JSON.parse(event.body);
+    // Frontend sends: { recipient: { name, company, phone, street, city, state, zip }, service, weight, description, jobId }
+    const body = JSON.parse(event.body);
+    const r = body.recipient || {};
+
+    const recipientName    = r.name    || r.company || 'Recipient';
+    const recipientCompany = r.company || '';
+    const recipientPhone   = (r.phone  || '3055550000').replace(/\D/g, '');
+    const street           = r.street  || '';
+    const city             = r.city    || '';
+    const state            = r.state   || '';
+    const zip              = r.zip     || '';
+    const serviceType      = body.service     || 'FEDEX_GROUND';
+    const weight           = parseFloat(body.weight) || 5;
+    const description      = body.description || 'Medical Equipment';
+    const jobId            = body.jobId       || '';
 
     const token = await getToken();
+
+    const shipDate = new Date();
+    // FedEx won't accept same-day weekend dates — push to Monday if needed
+    const day = shipDate.getDay();
+    if (day === 0) shipDate.setDate(shipDate.getDate() + 1); // Sunday → Monday
+    if (day === 6) shipDate.setDate(shipDate.getDate() + 2); // Saturday → Monday
+    const shipDatestamp = shipDate.toISOString().split('T')[0];
 
     const shipmentBody = {
       labelResponseOptions: 'URL_ONLY',
@@ -75,20 +83,20 @@ exports.handler = async (event) => {
         },
         recipients: [{
           contact: {
-            personName: recipientName || 'Biomed Department',
-            phoneNumber: recipientPhone || '0000000000',
-            companyName: facilityName || ''
+            personName: recipientName,
+            phoneNumber: recipientPhone,
+            companyName: recipientCompany
           },
           address: {
-            streetLines: [street || ''],
-            city: city || '',
-            stateOrProvinceCode: state || '',
-            postalCode: zip || '',
+            streetLines: [street],
+            city: city,
+            stateOrProvinceCode: state,
+            postalCode: zip,
             countryCode: 'US'
           }
         }],
-        shipDatestamp: new Date().toISOString().split('T')[0],
-        serviceType: serviceType || 'FEDEX_GROUND',
+        shipDatestamp: shipDatestamp,
+        serviceType: serviceType,
         packagingType: 'YOUR_PACKAGING',
         pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
         shippingChargesPayment: {
@@ -107,18 +115,20 @@ exports.handler = async (event) => {
         requestedPackageLineItems: [{
           weight: {
             units: 'LB',
-            value: weight || 5
+            value: weight
           },
           dimensions: {
-            length: length || 12,
-            width: width || 12,
-            height: height || 8,
+            length: 12,
+            width: 12,
+            height: 8,
             units: 'IN'
           },
-          customerReferences: [{
-            customerReferenceType: 'CUSTOMER_REFERENCE',
-            value: jobId || ''
-          }]
+          customerReferences: [
+            {
+              customerReferenceType: 'CUSTOMER_REFERENCE',
+              value: jobId || description
+            }
+          ]
         }]
       },
       accountNumber: { value: FEDEX_ACCOUNT }
@@ -137,17 +147,27 @@ exports.handler = async (event) => {
     const data = await res.json();
 
     if (!res.ok) {
-      console.error('FedEx error:', JSON.stringify(data));
+      console.error('FedEx ship error:', JSON.stringify(data));
+      const msg = data?.errors?.[0]?.message || data?.error || JSON.stringify(data);
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: data?.errors?.[0]?.message || 'FedEx error', details: data })
+        body: JSON.stringify({ error: msg, raw: data })
       };
     }
 
-    const shipment = data?.output?.transactionShipments?.[0];
+    const shipment     = data?.output?.transactionShipments?.[0];
     const trackingNumber = shipment?.masterTrackingNumber;
-    const labelUrl = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.url;
+    const labelUrl     = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.url;
+
+    if (!trackingNumber || !labelUrl) {
+      console.error('Missing tracking/label in response:', JSON.stringify(data));
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Label created but could not extract tracking number or URL', raw: data })
+      };
+    }
 
     return {
       statusCode: 200,
@@ -156,7 +176,11 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    console.error(err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    console.error('Function error:', err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message })
+    };
   }
 };
