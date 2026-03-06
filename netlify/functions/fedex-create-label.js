@@ -1,8 +1,8 @@
-// Netlify Function — FedEx Create Label
-const FEDEX_API_KEY = 'l7d57c796ad60049809cff29a676e5be30';
-const FEDEX_SECRET_KEY = '5d034655541c4efea852a99431bea722';
+// Netlify Function — FedEx Create Label (SANDBOX / TEST MODE)
+const FEDEX_API_KEY = 'l78232c718dce94da0998ef8df27d67a5a';
+const FEDEX_SECRET_KEY = 'e4e5d99030b4485a995d7ac5b276f80c';
 const FEDEX_ACCOUNT = '740561073';
-const FEDEX_BASE = 'https://apis.fedex.com';
+const FEDEX_BASE = 'https://apis-sandbox.fedex.com';
 
 async function getToken() {
   const res = await fetch(`${FEDEX_BASE}/oauth/token`, {
