@@ -364,9 +364,18 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         </select>
         <select class="filter-select" id="filter-status" onchange="filterJobs()">
           <option value="">All Status</option>
-          <option>Estimating</option><option>Pending Approval</option><option>Approved w/ PO</option>
-          <option>Incoming</option><option>Ready waiting on PO</option><option>No Problem Found</option><option>On the Way (Unrepairable)</option>
-          <option>Pending assignment</option><option>Completed</option>
+          <option>Incoming</option>
+          <option>Estimating</option>
+          <option>Pending Approval</option>
+          <option>Approved w/ PO</option>
+          <option>Approved w/o PO</option>
+          <option>Ready waiting on PO</option>
+          <option>On the Way (Repaired)</option>
+          <option>On the Way (Not Repaired)</option>
+          <option>On the Way (Unrepairable)</option>
+          <option>No Problem Found</option>
+          <option>Invoiced waiting for closing</option>
+          <option>Completed</option>
         </select>
         <select class="filter-select" id="filter-facility" onchange="filterJobs()"><option value="">All Facilities</option></select>
         <select class="filter-select" id="filter-mfr" onchange="filterJobs()"><option value="">All Manufacturers</option></select>
@@ -434,7 +443,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
           <div id="list-pinned"></div>
         </div>
         <div id="today-needs-estimate" style="display:none">
-          <div class="today-section-title">&#128196; Needs Estimate <span id="count-estimate" class="today-count"></span></div>
+          <div class="today-section-title">&#128196; Estimating <span id="count-estimate" class="today-count"></span></div>
           <div id="list-needs-estimate"></div>
         </div>
         <div id="today-pending-approval" style="display:none">
@@ -442,12 +451,20 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
           <div id="list-pending-approval"></div>
         </div>
         <div id="today-approved-waiting" style="display:none">
-          <div class="today-section-title">&#128230; Approved — Waiting on Action <span id="count-approved-waiting" class="today-count"></span></div>
+          <div class="today-section-title">&#128230; Approved w/ PO <span id="count-approved-waiting" class="today-count"></span></div>
           <div id="list-approved-waiting"></div>
         </div>
+        <div id="today-approved-nopo" style="display:none">
+          <div class="today-section-title">&#128230; Approved w/o PO <span id="count-approved-nopo" class="today-count"></span></div>
+          <div id="list-approved-nopo"></div>
+        </div>
         <div id="today-no-vendor" style="display:none">
-          <div class="today-section-title">&#127981; No Vendor Assigned <span id="count-no-vendor" class="today-count"></span></div>
+          <div class="today-section-title">&#127981; No Vendor <span id="count-no-vendor" class="today-count"></span></div>
           <div id="list-no-vendor"></div>
+        </div>
+        <div id="today-ready-po" style="display:none">
+          <div class="today-section-title">&#128197; Ready waiting on PO <span id="count-ready-po" class="today-count"></span></div>
+          <div id="list-ready-po"></div>
         </div>
         <div id="today-delivered" style="display:none">
           <div class="today-section-title">&#9989; Delivered — Awaiting Check-in <span id="count-delivered" class="today-count"></span></div>
@@ -579,14 +596,17 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
             <label class="form-label">Status <span class="req">*</span></label>
             <select class="form-select" id="f-status">
               <option value="">Select status...</option>
-                            <option>Pending assignment</option>
+              <option>Incoming</option>
               <option>Estimating</option>
               <option>Pending Approval</option>
               <option>Approved w/ PO</option>
-              <option>Incoming</option>
+              <option>Approved w/o PO</option>
               <option>Ready waiting on PO</option>
-              <option>No Problem Found</option>
+              <option>On the Way (Repaired)</option>
+              <option>On the Way (Not Repaired)</option>
               <option>On the Way (Unrepairable)</option>
+              <option>No Problem Found</option>
+              <option>Invoiced waiting for closing</option>
               <option>Completed</option>
             </select>
           </div>
@@ -1046,7 +1066,7 @@ var currentDetailId = null;
 var editingJobId = null;
 var pendingFiles = {estimate:[],invoice:[],vendor:[],general:[],tech:[]};
 
-var STATUS_OPTS = ['Open','Pending assignment','Estimating','Pending Approval','Approved w/ PO','Incoming','Ready waiting on PO','No Problem Found','On the Way (Repaired)','On the Way (Unrepairable)','Completed'];
+var STATUS_OPTS = ['Incoming','Estimating','Pending Approval','Approved w/ PO','Approved w/o PO','Ready waiting on PO','On the Way (Repaired)','On the Way (Not Repaired)','On the Way (Unrepairable)','No Problem Found','Invoiced waiting for closing','Completed'];
 var TYPE_OPTS = ['Repair Request','Warranty Request','Purchase Request','Preventive Maintenance'];
 
 // ─── VIEWS ───────────────────────────────────────────────────────────────────
@@ -1624,7 +1644,7 @@ document.querySelectorAll('.modal-overlay').forEach(function(m){m.addEventListen
 function esc(s){if(s===null||s===undefined) return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function typeClass(t){if(t==='Repair Request') return 'type-repair';if(t==='Warranty Request') return 'type-warranty';if(t==='Preventive Maintenance') return 'type-maintenance';return 'type-purchase';}
 function shortType(t){if(t==='Repair Request') return '&#128295; Repair';if(t==='Warranty Request') return '&#9989; Warranty';if(t==='Preventive Maintenance') return '&#9881; PM';return '&#128722; Purchase';}
-function statusDot(s){if(s==='Open'||s==='Incoming'||s==='Pending assignment') return 'dot-open';if(s==='Approved w/ PO') return 'dot-approved';if(s==='No Problem Found'||s==='Completed') return 'dot-closed';return 'dot-pending';}
+function statusDot(s){if(s==='Open'||s==='Incoming'||s==='Pending assignment') return 'dot-open';if(s==='Approved w/ PO'||s==='Approved w/o PO') return 'dot-approved';if(s==='No Problem Found'||s==='Completed') return 'dot-closed';return 'dot-pending';}
 function fmtDate(d){if(!d) return '&mdash;';var p=d.split('-');if(p.length<3) return d;return p[1]+'/'+p[2]+'/'+p[0];}
 
 // ─── SNOOZE / DO NOT REMIND ─────────────────────────────────────────────────
@@ -1830,7 +1850,9 @@ function renderToday() {
   var needsEstimate = [];
   var pendingApproval = [];
   var approvedWaiting = [];
+  var approvedNoPoArr = [];
   var noVendor = [];
+  var readyPO = [];
 
   var snoozedIds = getSnoozed();
   jobs.forEach(function(j) {
@@ -1855,18 +1877,25 @@ function renderToday() {
     if (s === 'Pending Approval' && days >= 7) {
       pendingApproval.push({j:j, days:days});
     }
-    // Approved w/ or w/o PO > 5 days with no vendor
-    if ((s === 'Approved w/ PO' || s === 'Approved w/o PO') && days >= 5) {
+    // Approved w/ PO > 5 days
+    if (s === 'Approved w/ PO' && days >= 5) {
       approvedWaiting.push({j:j, days:days});
+    }
+    // Approved w/o PO > 5 days
+    if (s === 'Approved w/o PO' && days >= 5) {
+      approvedNoPoArr.push({j:j, days:days});
     }
     // Approved statuses with no vendor assigned
     if ((s === 'Approved w/ PO' || s === 'Approved w/o PO' || s === 'Estimating') && !j.vendorRepair && !j.vendorParts) {
       noVendor.push({j:j, days:days});
     }
+    if (s === 'Ready waiting on PO' && (currentUser === 'Andrea' || currentUser === 'Ana')) {
+      readyPO.push({j:j, days:days});
+    }
   });
 
   // Sort by days descending (most urgent first)
-  [needsEstimate, pendingApproval, approvedWaiting, noVendor].forEach(function(arr) {
+  [needsEstimate, pendingApproval, approvedWaiting, approvedNoPoArr, noVendor, readyPO].forEach(function(arr) {
     arr.sort(function(a,b){return b.days - a.days;});
   });
 
@@ -1908,25 +1937,39 @@ function renderToday() {
   renderSection('today-needs-estimate','list-needs-estimate','count-estimate', needsEstimate, 3, 'Stale estimate');
   renderSection('today-pending-approval','list-pending-approval','count-pending-approval', pendingApproval, 7, 'Awaiting approval');
   renderSection('today-approved-waiting','list-approved-waiting','count-approved-waiting', approvedWaiting, 5, 'Needs action');
+  renderSection('today-approved-nopo','list-approved-nopo','count-approved-nopo', approvedNoPoArr, 5, 'Needs action');
   renderSection('today-no-vendor','list-no-vendor','count-no-vendor', noVendor, 5, 'No vendor assigned');
+  renderSection('today-ready-po','list-ready-po','count-ready-po', readyPO, 5, 'Waiting on PO');
 
-  var total = needsEstimate.length + pendingApproval.length + approvedWaiting.length + noVendor.length;
+  // Count unique jobs across all sections (a job may appear in multiple sections)
+  var seenIds = {};
+  var uniqueTotal = 0;
+  [needsEstimate, pendingApproval, approvedWaiting, approvedNoPoArr, noVendor, readyPO].forEach(function(arr) {
+    arr.forEach(function(item) {
+      if (!seenIds[item.j.id]) { seenIds[item.j.id] = true; uniqueTotal++; }
+    });
+  });
+  var total = uniqueTotal;
   var empty = document.getElementById('today-empty');
   empty.style.display = total === 0 ? 'block' : 'none';
 
   // Update badge
   var badge = document.getElementById('today-badge');
-  if (total > 0) { badge.textContent = total; badge.style.display = 'inline-block'; }
+  if (uniqueTotal > 0) { badge.textContent = uniqueTotal; badge.style.display = 'inline-block'; }
   else { badge.style.display = 'none'; }
 
   // Build filter buttons
   var SECTIONS = [
-    { id: 'today-needs-estimate',  label: '&#128196; Needs Estimate',           count: needsEstimate.length },
-    { id: 'today-pending-approval',label: '&#9203; Pending Approval',           count: pendingApproval.length },
-    { id: 'today-approved-waiting',label: '&#128230; Approved — Waiting',       count: approvedWaiting.length },
-    { id: 'today-no-vendor',       label: '&#127981; No Vendor',                count: noVendor.length },
+    { id: 'today-needs-estimate',  label: '&#128196; Estimating',           count: needsEstimate.length },
+    { id: 'today-pending-approval',label: '&#9203; Pending Approval',       count: pendingApproval.length },
+    { id: 'today-approved-waiting',label: '&#128230; Approved w/ PO',       count: approvedWaiting.length },
+    { id: 'today-approved-nopo',   label: '&#128230; Approved w/o PO',      count: approvedNoPoArr.length },
+    { id: 'today-no-vendor',       label: '&#127981; No Vendor',            count: noVendor.length },
   ];
-  buildTodayFilters(SECTIONS);
+  if (currentUser === 'Andrea' || currentUser === 'Ana') {
+    SECTIONS.push({ id: 'today-ready-po', label: '&#128197; Ready waiting on PO', count: readyPO.length });
+  }
+  buildTodayFilters(SECTIONS, uniqueTotal);
   applyTodayFilter(activeTodayFilter, SECTIONS);
 
   // Auto-fetch tracking for all jobs with tracking numbers
@@ -1935,12 +1978,13 @@ function renderToday() {
 
 var activeTodayFilter = null;
 
-function buildTodayFilters(sections) {
+function buildTodayFilters(sections, allCount) {
   var bar = document.getElementById('today-filter-bar');
   if (!bar) return;
   // All button
   var allActive = activeTodayFilter === null;
-  var btns = '<button onclick="setTodayFilter(null)" style="' + todayFilterStyle(allActive) + '">All <span style="' + todayCountStyle(allActive) + '">' + sections.reduce(function(s,x){return s+x.count;},0) + '</span></button>';
+  var displayCount = (allCount !== undefined) ? allCount : sections.reduce(function(s,x){return s+x.count;},0);
+  var btns = '<button onclick="setTodayFilter(null)" style="' + todayFilterStyle(allActive) + '">All <span style="' + todayCountStyle(allActive) + '">' + displayCount + '</span></button>';
   sections.forEach(function(s) {
     if (!s.count) return;
     var active = activeTodayFilter === s.id;
@@ -1967,6 +2011,10 @@ function setTodayFilter(sectionId) {
     { id: 'today-approved-waiting', label: '&#128230; Approved — Waiting', count: parseInt(document.getElementById('count-approved-waiting').textContent)||0 },
     { id: 'today-no-vendor',        label: '&#127981; No Vendor',          count: parseInt(document.getElementById('count-no-vendor').textContent)||0 },
   ];
+  if (currentUser === 'Andrea' || currentUser === 'Ana') {
+    var rpoEl = document.getElementById('count-ready-po');
+    SECTIONS.push({ id: 'today-ready-po', label: '&#128197; Ready — Waiting PO', count: rpoEl ? (parseInt(rpoEl.textContent)||0) : 0 });
+  }
   buildTodayFilters(SECTIONS);
   applyTodayFilter(sectionId, SECTIONS);
 }
