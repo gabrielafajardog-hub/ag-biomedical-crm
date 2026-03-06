@@ -1,16 +1,22 @@
 // Netlify Function — FedEx Create Label (SANDBOX / TEST MODE)
-const FEDEX_API_KEY = 'l78232c718dce94da0998ef8df27d67a5a';
-const FEDEX_SECRET_KEY = 'e4e5d99030b4485a995d7ac5b276f80c';
+const FEDEX_API_KEY = 'l7e90b744852174eada38a1af105ae0ded';
+const FEDEX_SECRET_KEY = 'd8f1aa390df442eca973779e034faa5f';
 const FEDEX_ACCOUNT = '740561073';
 const FEDEX_BASE = 'https://apis-sandbox.fedex.com';
 
 async function getToken() {
+  const params = new URLSearchParams();
+  params.append('grant_type', 'client_credentials');
+  params.append('client_id', FEDEX_API_KEY);
+  params.append('client_secret', FEDEX_SECRET_KEY);
+
   const res = await fetch(`${FEDEX_BASE}/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=client_credentials&client_id=${FEDEX_API_KEY}&client_secret=${FEDEX_SECRET_KEY}`
+    body: params.toString()
   });
   const data = await res.json();
+  console.log('FedEx token response:', JSON.stringify(data));
   if (!data.access_token) throw new Error('FedEx auth failed: ' + JSON.stringify(data));
   return data.access_token;
 }
