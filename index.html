@@ -868,6 +868,13 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
             <option value="FEDEX_EXPRESS_SAVER">FedEx Express Saver</option>
           </select>
         </div>
+        <div class="form-field" id="lbl-onerate-toggle" style="display:none">
+          <label class="form-label">FedEx One Rate</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:4px">
+            <input type="checkbox" id="lbl-onerate-check" onchange="handleLabelServiceChange()" style="width:16px;height:16px;cursor:pointer">
+            Use FedEx One Rate®
+          </label>
+        </div>
         <div class="form-field" id="lbl-onerate-wrap" style="display:none">
           <label class="form-label">One Rate Box Size</label>
           <select class="form-select" id="lbl-box-size">
@@ -2710,7 +2717,10 @@ function openLabelForm(mode) {
 function handleLabelServiceChange() {
   var service = document.getElementById('lbl-service').value;
   var isExpress = ['PRIORITY_OVERNIGHT','STANDARD_OVERNIGHT','FEDEX_2_DAY','FEDEX_EXPRESS_SAVER'].includes(service);
-  document.getElementById('lbl-onerate-wrap').style.display = isExpress ? 'block' : 'none';
+  var oneRateChecked = document.getElementById('lbl-onerate-check').checked;
+  document.getElementById('lbl-onerate-toggle').style.display = isExpress ? 'block' : 'none';
+  document.getElementById('lbl-onerate-wrap').style.display = (isExpress && oneRateChecked) ? 'block' : 'none';
+  if (!isExpress) document.getElementById('lbl-onerate-check').checked = false;
 }
 
 async function createFedExLabel() {
@@ -2725,7 +2735,8 @@ async function createFedExLabel() {
   var weight  = parseFloat(document.getElementById('lbl-weight').value) || 5;
   var desc    = document.getElementById('lbl-desc').value.trim() || 'Medical Equipment';
   var isExpress = ['PRIORITY_OVERNIGHT','STANDARD_OVERNIGHT','FEDEX_2_DAY','FEDEX_EXPRESS_SAVER'].includes(service);
-  var boxSize = isExpress ? document.getElementById('lbl-box-size').value : null;
+  var oneRate = isExpress && document.getElementById('lbl-onerate-check').checked;
+  var boxSize = oneRate ? document.getElementById('lbl-box-size').value : null;
   var statusEl = document.getElementById('label-status');
 
   if (!street || !city || !state || !zip) {
@@ -2751,7 +2762,7 @@ async function createFedExLabel() {
     service: service,
     weight: weight,
     description: desc,
-    oneRate: isExpress,
+    oneRate: oneRate,
     boxSize: boxSize,
     jobId: currentLabelJob ? currentLabelJob.id : ''
   };
