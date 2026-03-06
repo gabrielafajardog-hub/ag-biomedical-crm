@@ -1,87 +1,115 @@
-// Netlify Function — FedEx Tracking Proxy
-const FEDEX_API_KEY = 'l78b74564b8d2a4879bcd7a1e4347715a3';
-const FEDEX_SECRET_KEY = 'e636f244800046e4aa686b2b620f56d3';
-const FEDEX_BASE = 'https://apis.fedex.com';
+const https = require('https');
 
 async function getToken() {
-  const res = await fetch(`${FEDEX_BASE}/oauth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=client_credentials&client_id=${FEDEX_API_KEY}&client_secret=${FEDEX_SECRET_KEY}`
+  return new Promise((resolve, reject) => {
+    const body = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: process.env.FEDEX_CLIENT_ID,
+      client_secret: process.env.FEDEX_CLIENT_SECRET
+    }).toString();
+
+    const req = https.request({
+      hostname: 'apis.fedex.com',
+      path: '/oauth/token',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch(e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
   });
-  const data = await res.json();
-  if (!data.access_token) throw new Error('Failed to get FedEx token: ' + JSON.stringify(data));
-  return data.access_token;
 }
 
 async function trackPackage(token, trackingNumber) {
-  const res = await fetch(`${FEDEX_BASE}/track/v1/trackingnumbers`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'X-locale': 'en_US'
-    },
-    body: JSON.stringify({
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
       includeDetailedScans: true,
       trackingInfo: [{ trackingNumberInfo: { trackingNumber } }]
-    })
+    });
+
+    const req = https.request({
+      hostname: 'apis.fedex.com',
+      path: '/track/v1/trackingnumbers',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-locale': 'en_US',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch(e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
   });
-  return await res.json();
 }
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
-
   try {
-    const { trackingNumber } = JSON.parse(event.body || '{}');
-    if (!trackingNumber) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'trackingNumber required' }) };
-    }
+    const { trackingNumber } = JSON.parse(event.body);
+    if (!trackingNumber) return { statusCode: 400, body: JSON.stringify({ error: 'No tracking number' }) };
 
-    const token = await getToken();
-    const result = await trackPackage(token, trackingNumber);
+    const tokenData = await getToken();
+    if (!tokenData.access_token) return { statusCode: 401, body: JSON.stringify({ error: 'Auth failed' }) };
 
-    const output = result?.output?.completeTrackResults?.[0]?.trackResults?.[0];
-    if (!output) {
-      return { statusCode: 200, headers, body: JSON.stringify({ status: 'Unknown', detail: 'No results found' }) };
-    }
+    const result = await trackPackage(tokenData.access_token, trackingNumber);
 
-    const status = output.latestStatusDetail?.description || 'Unknown';
-    const code = output.latestStatusDetail?.code || '';
-    const location = output.latestStatusDetail?.scanLocation?.city
-      ? `${output.latestStatusDetail.scanLocation.city}, ${output.latestStatusDetail.scanLocation.stateOrProvinceCode}`
-      : '';
-    const estimatedDelivery = output.estimatedDeliveryTimeWindow?.window?.ends || '';
+    const trackResult = result?.output?.completeTrackResults?.[0]?.trackResults?.[0];
+    if (!trackResult) return { statusCode: 200, body: JSON.stringify({ error: 'No data' }) };
 
-    // Get actual delivery date/time if delivered
-    let deliveredAt = '';
-    if (code === 'DL') {
-      const scans = output.scanEvents || [];
-      const dlScan = scans.find(s => s.eventType === 'DL');
-      if (dlScan) deliveredAt = dlScan.date || '';
-    }
+    const statusCode = trackResult.latestStatusDetail?.code || '';
+    const statusDesc = trackResult.latestStatusDetail?.description || 'Unknown';
+    const deliveredAt = trackResult.actualDeliveryTime || null;
+    const estimatedDelivery = trackResult.estimatedDeliveryTimeWindow?.window?.ends || null;
+    const location = trackResult.latestStatusDetail?.scanLocation?.city || null;
+
+    const statusMap = {
+      'DL': 'Delivered',
+      'OD': 'Out for Delivery',
+      'IT': 'In Transit',
+      'PU': 'Picked Up',
+      'PX': 'Picked Up',
+      'OC': 'Label Created',
+      'DE': 'Delivery Exception',
+      'RS': 'Return to Sender',
+      'HL': 'Hold at Location'
+    };
 
     return {
       statusCode: 200,
-      headers,
-      body: JSON.stringify({ status, code, location, estimatedDelivery, deliveredAt })
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({
+        code: statusCode,
+        status: statusMap[statusCode] || statusDesc,
+        deliveredAt,
+        estimatedDelivery,
+        location
+      })
     };
 
   } catch (err) {
-    console.error('FedEx error:', err);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: err.message })
-    };
+    console.error(err);
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
