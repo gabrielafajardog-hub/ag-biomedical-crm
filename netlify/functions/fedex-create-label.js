@@ -60,6 +60,8 @@ exports.handler = async (event) => {
     const weight           = parseFloat(body.weight) || 5;
     const description      = body.description || 'Medical Equipment';
     const jobId            = body.jobId       || '';
+    const boxSize          = body.boxSize     || null; // e.g. 'FEDEX_SMALL_BOX'
+    const oneRate          = body.oneRate     || false;
 
     const token = await getToken();
 
@@ -103,7 +105,7 @@ exports.handler = async (event) => {
         }],
         shipDatestamp: shipDatestamp,
         serviceType: serviceType,
-        packagingType: 'YOUR_PACKAGING',
+        packagingType: oneRate && boxSize ? boxSize : 'YOUR_PACKAGING',
         pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
         shippingChargesPayment: {
           paymentType: 'SENDER',
@@ -113,10 +115,15 @@ exports.handler = async (event) => {
             }
           }
         },
+        ...(oneRate ? {
+          shipmentSpecialServices: {
+            specialServiceTypes: ['FEDEX_ONE_RATE']
+          }
+        } : {}),
         labelSpecification: {
           labelFormatType: 'COMMON2D',
-          imageType: 'PDF',
-          labelStockType: 'PAPER_4X6'
+          imageType: 'ZPLII',
+          labelStockType: 'STOCK_4X6'
         },
         requestedPackageLineItems: [{
           weight: {
