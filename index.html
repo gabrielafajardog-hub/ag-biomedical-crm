@@ -1759,6 +1759,25 @@ function daysClass(days, threshold) {
   return 'days-ok';
 }
 
+function pinnedTileHtml(j, days) {
+  var cls = daysClass(days, STALE_RULES[j.status]||5);
+  var daysLabel = days === 999 ? 'No date' : days + 'd ago';
+  return '<div style="background:var(--surface);border:1.5px solid #c0823a44;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;position:relative">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
+      '<div style="cursor:pointer" onclick="openEditJobModal(\'' + esc(j.id) + '\')">' +
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--accent);font-weight:700">WO-' + esc(j.id) + '</div>' +
+        '<div style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px;line-height:1.3">' + esc(j.manufacturer||'') + ' ' + esc(j.model||'') + '</div>' +
+      '</div>' +
+      '<div class="today-days ' + cls + '" style="font-size:10px;padding:2px 7px;white-space:nowrap;flex-shrink:0">' + daysLabel + '</div>' +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--text-muted)">' + esc(j.facility||'') + '</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">' +
+      '<div style="font-size:10px;color:var(--text-muted);font-style:italic">' + esc(j.status) + (j.est ? ' &middot; <span style="color:var(--accent);font-style:normal;font-weight:600">Est #' + esc(j.est) + '</span>' : '') + '</div>' +
+      '<button onclick="togglePin(\'' + esc(j.id) + '\')" style="background:#c0823a;color:#fff;border:none;border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--mono);cursor:pointer">&#128204; Unpin</button>' +
+    '</div>' +
+  '</div>';
+}
+
 function todayCardHtml(j, days, threshold, flag) {
   var cls = daysClass(days, threshold);
   var daysLabel = days === 999 ? 'No date' : days + 'd ago';
@@ -1851,14 +1870,39 @@ function renderToday() {
     arr.sort(function(a,b){return b.days - a.days;});
   });
 
+  // Render pinned section first — compact tile grid, always visible
+  var pinnedIds = getPinned();
+  var pinnedSec = document.getElementById('today-pinned');
+  var pinnedList = document.getElementById('list-pinned');
+  var pinnedCount = document.getElementById('count-pinned');
+  if (pinnedIds.length) {
+    var allTodayItems = needsEstimate.concat(pendingApproval).concat(approvedWaiting).concat(noVendor);
+    var pinnedJobs = pinnedIds.map(function(pid){
+      return allTodayItems.find(function(item){ return String(item.j.id) === String(pid); });
+    }).filter(Boolean);
+    if (pinnedJobs.length) {
+      pinnedSec.style.display = 'block';
+      pinnedCount.textContent = pinnedJobs.length;
+      pinnedList.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:8px">' +
+        pinnedJobs.map(function(item){ return pinnedTileHtml(item.j, item.days); }).join('') +
+        '</div>';
+    } else {
+      pinnedSec.style.display = 'none';
+    }
+  } else {
+    pinnedSec.style.display = 'none';
+  }
+
   function renderSection(sectionId, listId, countId, arr, threshold, flag) {
     var sec = document.getElementById(sectionId);
     var list = document.getElementById(listId);
     var count = document.getElementById(countId);
-    if (!arr.length) { sec.style.display = 'none'; return; }
+    // Filter out pinned jobs from regular sections
+    var filtered = arr.filter(function(item){ return pinnedIds.indexOf(String(item.j.id)) === -1; });
+    if (!filtered.length) { sec.style.display = 'none'; return; }
     sec.style.display = 'block';
-    count.textContent = arr.length;
-    list.innerHTML = arr.map(function(item){ return todayCardHtml(item.j, item.days, threshold, flag); }).join('');
+    count.textContent = filtered.length;
+    list.innerHTML = filtered.map(function(item){ return todayCardHtml(item.j, item.days, threshold, flag); }).join('');
   }
 
   renderSection('today-needs-estimate','list-needs-estimate','count-estimate', needsEstimate, 3, 'Stale estimate');
@@ -1874,30 +1918,6 @@ function renderToday() {
   var badge = document.getElementById('today-badge');
   if (total > 0) { badge.textContent = total; badge.style.display = 'inline-block'; }
   else { badge.style.display = 'none'; }
-
-  // Render pinned section (always visible regardless of filter)
-  var pinnedIds = getPinned();
-  var pinnedJobs = [];
-  if (pinnedIds.length) {
-    // Collect pinned from all sections
-    var allTodayItems = needsEstimate.concat(pendingApproval).concat(approvedWaiting).concat(noVendor);
-    pinnedIds.forEach(function(pid) {
-      var found = allTodayItems.find(function(item){ return String(item.j.id) === String(pid); });
-      if (found) pinnedJobs.push(found);
-    });
-  }
-  var pinnedSec = document.getElementById('today-pinned');
-  var pinnedList = document.getElementById('list-pinned');
-  var pinnedCount = document.getElementById('count-pinned');
-  if (pinnedJobs.length) {
-    pinnedSec.style.display = 'block';
-    pinnedCount.textContent = pinnedJobs.length;
-    pinnedList.innerHTML = pinnedJobs.map(function(item){
-      return todayCardHtml(item.j, item.days, STALE_RULES[item.j.status]||5, 'Pinned');
-    }).join('');
-  } else {
-    pinnedSec.style.display = 'none';
-  }
 
   // Build filter buttons
   var SECTIONS = [
