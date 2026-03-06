@@ -185,6 +185,9 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
 .snooze-btn.snoozed{background:var(--surface2);color:var(--text-muted);border-style:dashed}
 .done-snooze-btn{background:none;border:1px solid var(--green);border-radius:6px;padding:4px 10px;font-size:11px;font-family:var(--mono);color:var(--green);cursor:pointer;white-space:nowrap;transition:all .15s}
 .done-snooze-btn:hover{background:var(--green);color:#fff}
+.pin-btn{background:none;border:1px solid #c0823a;border-radius:6px;padding:4px 10px;font-size:11px;font-family:var(--mono);color:#c0823a;cursor:pointer;white-space:nowrap;transition:all .15s}
+.pin-btn:hover{background:#c0823a22}
+.pin-btn.pinned{background:#c0823a;color:#fff}
 .snoozed-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:8px;opacity:.7}
 .snoozed-card-id{font-family:var(--mono);font-size:11px;color:var(--text-muted);font-weight:700}
 /* TODAY TAB */
@@ -426,6 +429,10 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
       <!-- FILTER BUTTONS -->
       <div id="today-filter-bar" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 24px 20px"></div>
       <div style="max-width:900px;padding:0 24px 24px">
+        <div id="today-pinned" style="display:none">
+          <div class="today-section-title" style="color:#c0823a">&#128204; Pinned <span id="count-pinned" class="today-count" style="background:#c0823a;color:#fff"></span></div>
+          <div id="list-pinned"></div>
+        </div>
         <div id="today-needs-estimate" style="display:none">
           <div class="today-section-title">&#128196; Needs Estimate <span id="count-estimate" class="today-count"></span></div>
           <div id="list-needs-estimate"></div>
@@ -1624,6 +1631,22 @@ function fmtDate(d){if(!d) return '&mdash;';var p=d.split('-');if(p.length<3) re
 function getSnoozed() {
   try { return JSON.parse(localStorage.getItem('crm_snoozed') || '[]'); } catch(e) { return []; }
 }
+// ─── PIN FUNCTIONS ───────────────────────────────────────────────────────────
+function getPinned() {
+  try { return JSON.parse(localStorage.getItem('crm_pinned') || '[]'); } catch(e) { return []; }
+}
+function isPinned(jobId) {
+  return getPinned().indexOf(String(jobId)) !== -1;
+}
+function togglePin(jobId) {
+  var pinned = getPinned();
+  var idx = pinned.indexOf(String(jobId));
+  if (idx === -1) pinned.push(String(jobId));
+  else pinned.splice(idx, 1);
+  localStorage.setItem('crm_pinned', JSON.stringify(pinned));
+  renderToday();
+}
+
 // Timed snoozes: { id: untilTimestamp }
 function getSnoozedTimed() {
   try { return JSON.parse(localStorage.getItem('crm_snoozed_timed') || '{}'); } catch(e) { return {}; }
@@ -1776,6 +1799,7 @@ function todayCardHtml(j, days, threshold, flag) {
     '<div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">' +
       '<button class="done-snooze-btn" data-id="'+esc(j.id)+'" onclick="snoozeForDays(this.dataset.id,5)" title="Mark as done — hide for 5 days">&#10003; Done</button>' +
       '<button class="snooze-btn" data-id="'+esc(j.id)+'" onclick="toggleSnooze(this.dataset.id)" title="Do not remind me about this job">&#128277; Don&#39;t remind</button>' +
+      '<button class="pin-btn ' + (isPinned(j.id) ? 'pinned' : '') + '" data-id="'+esc(j.id)+'" onclick="togglePin(this.dataset.id)" title="Pin to top">&#128204; ' + (isPinned(j.id) ? 'Pinned' : 'Pin') + '</button>' +
     '</div>' +
   '</div>';
 }
@@ -1850,6 +1874,30 @@ function renderToday() {
   var badge = document.getElementById('today-badge');
   if (total > 0) { badge.textContent = total; badge.style.display = 'inline-block'; }
   else { badge.style.display = 'none'; }
+
+  // Render pinned section (always visible regardless of filter)
+  var pinnedIds = getPinned();
+  var pinnedJobs = [];
+  if (pinnedIds.length) {
+    // Collect pinned from all sections
+    var allTodayItems = needsEstimate.concat(pendingApproval).concat(approvedWaiting).concat(noVendor);
+    pinnedIds.forEach(function(pid) {
+      var found = allTodayItems.find(function(item){ return String(item.j.id) === String(pid); });
+      if (found) pinnedJobs.push(found);
+    });
+  }
+  var pinnedSec = document.getElementById('today-pinned');
+  var pinnedList = document.getElementById('list-pinned');
+  var pinnedCount = document.getElementById('count-pinned');
+  if (pinnedJobs.length) {
+    pinnedSec.style.display = 'block';
+    pinnedCount.textContent = pinnedJobs.length;
+    pinnedList.innerHTML = pinnedJobs.map(function(item){
+      return todayCardHtml(item.j, item.days, STALE_RULES[item.j.status]||5, 'Pinned');
+    }).join('');
+  } else {
+    pinnedSec.style.display = 'none';
+  }
 
   // Build filter buttons
   var SECTIONS = [
