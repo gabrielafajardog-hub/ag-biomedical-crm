@@ -2826,7 +2826,16 @@ async function createFedExLabel() {
       }
       statusEl.innerHTML = '<span style="color:#27ae60">&#10003; Label created! Tracking: <strong>' + esc(data.trackingNumber) + '</strong></span>';
       btn.textContent = '✓ Done';
-      window.open(data.labelUrl, '_blank');
+      // Download ZPL file directly to send to Zebra printer
+      var blob = new Blob([data.labelData], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'label_' + data.trackingNumber + '.zpl';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       setTimeout(function(){ closeModal('label-modal'); }, 2000);
     } else {
       var msg = data.error || (data.errors && data.errors[0] && data.errors[0].message) || JSON.stringify(data);
