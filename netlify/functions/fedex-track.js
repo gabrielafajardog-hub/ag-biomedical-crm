@@ -21,7 +21,7 @@ async function getToken() {
   }).toString();
 
   const res = await fetchUrl({
-    hostname: 'apis-sandbox.fedex.com',
+    hostname: 'apis.fedex.com',
     path: '/oauth/token',
     method: 'POST',
     headers: {
@@ -43,7 +43,7 @@ async function trackPackage(token, trackingNumber) {
   });
 
   const res = await fetchUrl({
-    hostname: 'apis-sandbox.fedex.com',
+    hostname: 'apis.fedex.com',
     path: '/track/v1/trackingnumbers',
     method: 'POST',
     headers: {
