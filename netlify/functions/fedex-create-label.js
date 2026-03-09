@@ -171,23 +171,19 @@ exports.handler = async (event) => {
 
     const shipment       = data?.output?.transactionShipments?.[0];
     const trackingNumber = shipment?.masterTrackingNumber;
-    const labelData      = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.encodedLabel;
+    const labelUrl       = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.url;
 
-    if (!trackingNumber || !labelData) {
-      const pieceResp = shipment?.pieceResponses?.[0];
-      const doc = pieceResp?.packageDocuments?.[0];
+    if (!trackingNumber || !labelUrl) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ 
-          error: 'debug',
-          debug_trackingNumber: trackingNumber,
-          debug_docKeys: doc ? Object.keys(doc) : 'no doc',
-          debug_pieceKeys: pieceResp ? Object.keys(pieceResp) : 'no pieceResp',
-          debug_shipmentKeys: shipment ? Object.keys(shipment) : 'no shipment'
-        })
+        body: JSON.stringify({ error: 'Could not extract tracking number or label URL', raw: { trackingNumber, labelUrl } })
       };
     }
+
+    // Fetch the ZPL content from the FedEx-hosted URL
+    const labelRes = await fetch(labelUrl);
+    const labelData = await labelRes.text();
 
     return {
       statusCode: 200,
