@@ -123,7 +123,7 @@ exports.handler = async (event) => {
         labelSpecification: {
           labelFormatType: 'COMMON2D',
           imageType: 'PDF',
-          labelStockType: 'PAPER_4X6'
+          labelStockType: 'STOCK_4X6'
         },
         requestedPackageLineItems: [{
           weight: {
