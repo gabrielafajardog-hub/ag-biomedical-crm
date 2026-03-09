@@ -1261,7 +1261,17 @@ var ALL_COLS = [
   {key:'qty',label:'Qty',sortable:false,render:function(j){return ic(j,'qty','<span class="mono-sm">'+(j.qty||1)+'</span>');}},
   {key:'issue',label:'Reported Issue',sortable:false,render:function(j){return ic(j,'issue','<span class="issue-text">'+(j.issue?esc(j.issue):'&mdash;')+'</span>');}},
   {key:'vendorRepair',label:'Vendor',sortable:true,render:function(j){return ic(j,'vendorRepair','<span style="font-size:12px;color:var(--text-muted)">'+(j.vendorRepair?esc(j.vendorRepair):'&mdash;')+'</span>');}},
-  {key:'tracking',label:'Tracking',sortable:false,render:function(j){return ic(j,'tracking','<span class="mono-sm">'+(j.tracking?esc(j.tracking):'&mdash;')+'</span>');}},
+  {key:'tracking',label:'Tracking',sortable:false,render:function(j){
+    if (!j.tracking) return '&mdash;';
+    var tc = trackingCache[j.tracking];
+    var badgeCls = 'tracking-badge' + (tc ? (' trk-'+tc.code) : '');
+    var detail = '';
+    if (tc && tc.code==='DL' && tc.deliveredAt) { var d=new Date(tc.deliveredAt); detail=' &middot; Delivered '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+    else if (tc && tc.estimatedDelivery) { var d=new Date(tc.estimatedDelivery); detail=' &middot; Est. '+d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+    else if (tc && tc.location) { detail=' &middot; '+tc.location; }
+    var label = tc ? ('&#128230; '+esc(tc.status)+detail) : ('&#128230; '+esc(j.tracking));
+    return '<span id="tbl-trk-'+esc(j.id)+'" class="'+badgeCls+'" style="font-style:normal;cursor:pointer;white-space:nowrap" onclick="fetchTracking(\''+esc(j.tracking)+'\',document.getElementById(\'tbl-trk-'+esc(j.id)+'\'))">'+label+'</span>';
+  }},
   {key:'technician',label:'Technician',sortable:true,render:function(j){return ic(j,'technician','<span class="mono-sm">'+(j.technician?esc(j.technician):'&mdash;')+'</span>');}},
   {key:'status',label:'Status',sortable:true,render:function(j){return ic(j,'status','<span class="status-dot"><span class="dot '+statusDot(j.status)+'"></span><span style="font-size:11px;color:var(--text-muted)">'+esc(j.status)+'</span></span>');}},
   {key:'repairedDate',label:'Repaired',sortable:true,render:function(j){return '<span class="mono-sm">'+fmtDate(j.repairedDate)+'</span>';}},
@@ -1314,6 +1324,15 @@ var colOrder=ALL_COLS.map(function(c){return c.key;});
 var colVisible={};
 ALL_COLS.forEach(function(c){colVisible[c.key]=DEFAULT_VISIBLE.indexOf(c.key)>=0;});
 
+// Restore saved column prefs
+try {
+  var savedCols = JSON.parse(localStorage.getItem('crm_cols') || '{}');
+  if (savedCols.order) colOrder = savedCols.order;
+  if (savedCols.visible) Object.keys(savedCols.visible).forEach(function(k){ colVisible[k] = savedCols.visible[k]; });
+} catch(e){}
+
+function saveColPrefs(){ try { localStorage.setItem('crm_cols', JSON.stringify({order:colOrder,visible:colVisible})); } catch(e){} }
+
 function toggleColPanel(){var p=document.getElementById('col-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block') renderColPanel();}
 
 function renderColPanel(){
@@ -1328,6 +1347,7 @@ function renderColPanel(){
       if(e.target.tagName==='SPAN'&&e.target.style.cursor==='grab') return;
       colVisible[key]=!colVisible[key];
       div.className='col-chip'+(colVisible[key]?' col-chip-on':'');
+      saveColPrefs();
       renderTableHeader();renderJobsTable();
     });
     div.addEventListener('dragstart',function(e){e.dataTransfer.setData('text/plain',key);div.style.opacity='.35';});
@@ -1340,6 +1360,7 @@ function renderColPanel(){
       if(from===to) return;
       var fi=colOrder.indexOf(from),ti=colOrder.indexOf(to);
       colOrder.splice(fi,1);colOrder.splice(ti,0,from);
+      saveColPrefs();
       renderColPanel();renderTableHeader();renderJobsTable();
     });
     list.appendChild(div);
