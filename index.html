@@ -1399,6 +1399,25 @@ function renderJobsTable() {
   }).join('');}
   document.getElementById('table-showing').textContent='Showing '+slice.length+' of '+total+' records';
   var pg=document.getElementById('pagination');
+  // Auto-fetch tracking for visible rows
+  if (colVisible['tracking']) {
+    slice.forEach(function(j) {
+      if (!j.tracking) return;
+      var el = document.getElementById('tbl-trk-' + j.id);
+      if (el && !trackingCache[j.tracking]) {
+        fetchTracking(j.tracking, el);
+      } else if (el && trackingCache[j.tracking]) {
+        var tc = trackingCache[j.tracking];
+        var badgeCls = 'tracking-badge trk-' + tc.code;
+        var detail = '';
+        if (tc.code==='DL' && tc.deliveredAt) { var d=new Date(tc.deliveredAt); detail=' &middot; Delivered '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+        else if (tc.estimatedDelivery) { var d=new Date(tc.estimatedDelivery); detail=' &middot; Est. '+d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+        else if (tc.location) { detail=' &middot; '+tc.location; }
+        el.className = badgeCls;
+        el.innerHTML = '&#128230; ' + esc(tc.status) + detail;
+      }
+    });
+  }
   if(pages<=1){pg.innerHTML='';return;}
   var html='',s=Math.max(1,currentPage-2),e=Math.min(pages,s+4);
   if(s>1) html+='<button class="page-btn" onclick="goPage(1)">1</button>'+(s>2?'<span style="color:var(--text-dim);padding:0 4px">&hellip;</span>':'');
