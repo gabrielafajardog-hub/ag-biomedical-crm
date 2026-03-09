@@ -174,11 +174,18 @@ exports.handler = async (event) => {
     const labelData      = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.encodedLabel;
 
     if (!trackingNumber || !labelData) {
-      console.error('Missing tracking/label in response:', JSON.stringify(data));
+      const pieceResp = shipment?.pieceResponses?.[0];
+      const doc = pieceResp?.packageDocuments?.[0];
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Label created but could not extract tracking number or label data', raw: data })
+        body: JSON.stringify({ 
+          error: 'debug',
+          debug_trackingNumber: trackingNumber,
+          debug_docKeys: doc ? Object.keys(doc) : 'no doc',
+          debug_pieceKeys: pieceResp ? Object.keys(pieceResp) : 'no pieceResp',
+          debug_shipmentKeys: shipment ? Object.keys(shipment) : 'no shipment'
+        })
       };
     }
 
