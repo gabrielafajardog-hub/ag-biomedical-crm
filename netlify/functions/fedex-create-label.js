@@ -169,23 +169,23 @@ exports.handler = async (event) => {
       };
     }
 
-    const shipment     = data?.output?.transactionShipments?.[0];
+    const shipment       = data?.output?.transactionShipments?.[0];
     const trackingNumber = shipment?.masterTrackingNumber;
-    const labelUrl     = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.url;
+    const labelData      = shipment?.pieceResponses?.[0]?.packageDocuments?.[0]?.encodedLabel;
 
-    if (!trackingNumber || !labelUrl) {
+    if (!trackingNumber || !labelData) {
       console.error('Missing tracking/label in response:', JSON.stringify(data));
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Label created but could not extract tracking number or URL', raw: data })
+        body: JSON.stringify({ error: 'Label created but could not extract tracking number or label data', raw: data })
       };
     }
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ trackingNumber, labelUrl })
+      body: JSON.stringify({ trackingNumber, labelData })
     };
 
   } catch (err) {
