@@ -2815,7 +2815,7 @@ async function createFedExLabel() {
     });
     var data = await resp.json();
 
-    if (data.trackingNumber && data.labelUrl) {
+    if (data.trackingNumber && data.labelData) {
       // Save tracking number to trackingOut field on the job
       if (currentLabelJob) {
         var idx = jobs.findIndex(function(j){return j.id===currentLabelJob.id;});
