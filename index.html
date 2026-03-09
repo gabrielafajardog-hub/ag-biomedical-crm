@@ -1219,6 +1219,17 @@ var USERS = {
   'Katherine':{password:'KatherineAG',role:'warehouse'},
 };
 
+// ─── USER FACILITY ACCESS ─────────────────────────────────────────────────────
+var USER_FACILITIES = {
+  'Andrea':   null,
+  'Pedro':    null,
+  'Gabriela': null,
+  'Egidio':   null,
+  'Elio':     null,
+  'Katherine':null,
+  'Ana': ["Acevedo Medical Group","Advanced Urology of South Florida - TGH","Ambulatory Surgery Center of Boca Raton","BAPTIST - Baptist Hospital","Baptist - Bethesda Hospital East","Baptist - Bethesda Hospital West","BAPTIST - Homestead Hospital","Baptist Health Miami Cancer Institute","Bascom Palmer Eye Institute","CCSF - Tampa General Hospital (Palm Beach)","CCSF - Tampa General Hospital (Palm Springs)","Charming Smiles Dental Center","Coral Ridge Outpatient Center","Holy Cross Hospital","HSA PGH LLC - Palmetto General Hospital","HSA PGH LLC - Palmetto General Hospital A&G","Interfaith Medical Center","Joe DiMaggio Children's Hospital","Key Biscayne Surgery Center LLC","Larkin Community Hospital","Larkin Community Hospital Palm Springs","Lauderdale Urology Associates","Memorial Hospital Miramar","Memorial Hospital Pembroke","Memorial Hospital West","Memorial Regional Hospital","Miami Lakes Surgery Center","Miami Surgical Center","NCH - Baker Downtown Hospital","NCH - North Naples Hospital","Nicklaus Children's Hospital","Palms Wellington Surgical Center","Parkcreek Surgery Center","Physicians Regional Medical Group - Collier","Physicians Regional Medical Group - Pine Ridge","Rapid Response Ambulance","RENOVO - Mount Sinai Medical Center","Skeletal Dynamics","Surgery Center of Aventura","Surgery Center of Fort. Lauderdale","Sylvester - Comprehensive Cancer Center","TENET - Delray Medical Center","TENET - Good Samaritan","TENET - Northshore Medical Center","TENET - Palm Beach Gardens Medical Center","TENET - St. Mary's Medical Center","Tenet - West Boca Medical Center","The Lennar Foundation Medical Center","The Surgery Center at Doral","UM - Converge Miami","University of Miami Hospital","VA Medical Center Miami","Viera VA Outpatient Clinic","West Palm Beach VA Medical Center","William \"Bill\" Kling VA Clinic"]
+};
+
 // What each role CANNOT see (sections hidden in detail + form)
 var ROLE_HIDE = {
   admin:      [],
@@ -1353,8 +1364,10 @@ function renderDashboard() {
 
 // ─── FILTERS & TABLE ─────────────────────────────────────────────────────────
 function populateFilters() {
+  var userFacilities = USER_FACILITIES[currentUser] || null;
   var mfrs=[...new Set(jobs.map(function(j){return j.manufacturer;}))].sort();
-  var facils=[...new Set(jobs.map(function(j){return j.facility;}))].sort();
+  var allFacils=[...new Set(jobs.map(function(j){return j.facility;}))].sort();
+  var facils = userFacilities ? allFacils.filter(function(f){return userFacilities.indexOf(f)>=0;}) : allFacils;
   var msel=document.getElementById('filter-mfr'),mcur=msel.value;
   msel.innerHTML='<option value="">All Manufacturers</option>'+mfrs.map(function(m){return '<option value="'+esc(m)+'"'+(m===mcur?' selected':'')+'>'+esc(m)+'</option>';}).join('');
   var fsel=document.getElementById('filter-facility'),fcur=fsel.value;
@@ -1372,6 +1385,7 @@ function populateFilters() {
 
 function filterJobs() {
   var q=document.getElementById('search-input').value.toLowerCase();
+  var userFacilities = USER_FACILITIES[currentUser] || null;
   var type=document.getElementById('filter-type').value;
   var status=document.getElementById('filter-status').value;
   var mfr=document.getElementById('filter-mfr').value;
@@ -1382,7 +1396,8 @@ function filterJobs() {
     if (closedFilter === 'open' && j.closed) return false;
     if (closedFilter === 'closed' && !j.closed) return false;
     var match=!q||Object.values(j).some(function(v){return typeof v==='string'&&v.toLowerCase().indexOf(q)>=0;});
-    return match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
+    var facilityAllowed = !userFacilities || userFacilities.indexOf(j.facility) >= 0;
+    return facilityAllowed&&match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
   });
   sortJobs();currentPage=1;renderJobsTable();applyRowFlags();
   document.getElementById('jobs-subtitle').textContent=filteredJobs.length+' of '+jobs.length+' requests · '+[...new Set(jobs.map(function(j){return j.facility;}))].length+' facilities';
@@ -1917,7 +1932,10 @@ function saveNewCustomer(){
   customers.push(newC);
   // Also add to facility dropdowns
   var opt=document.createElement('option');opt.value=name;opt.textContent=name;
-  document.getElementById('f-facility').appendChild(opt.cloneNode(true));
+  var uf = USER_FACILITIES[currentUser] || null;
+  if (!uf || uf.indexOf(opt.value) >= 0) {
+    document.getElementById('f-facility').appendChild(opt.cloneNode(true));
+  }
   closeModal('new-customer-modal');renderCustomers();
 }
 
@@ -2151,7 +2169,9 @@ function renderToday() {
   var readyPO = [];
 
   var snoozedIds = getSnoozed();
+  var _uf = USER_FACILITIES[currentUser] || null;
   jobs.forEach(function(j) {
+    if (_uf && _uf.indexOf(j.facility) < 0) return; // restrict by user facility access
     if (snoozedIds.indexOf(j.id) >= 0) return; // skip permanently snoozed
     if (isSnoozedTimed(j.id)) return; // skip timed snooze
     var s = j.status || '';
