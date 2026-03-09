@@ -122,8 +122,8 @@ exports.handler = async (event) => {
         } : {}),
         labelSpecification: {
           labelFormatType: 'COMMON2D',
-          imageType: 'ZPLII',
-          labelStockType: 'STOCK_4X6'
+          imageType: 'PDF',
+          labelStockType: 'PAPER_4X6'
         },
         requestedPackageLineItems: [{
           weight: {
@@ -181,9 +181,10 @@ exports.handler = async (event) => {
       };
     }
 
-    // Fetch the ZPL content from the FedEx-hosted URL
+    // Fetch the PDF from FedEx-hosted URL and return as base64
     const labelRes = await fetch(labelUrl);
-    const labelData = await labelRes.text();
+    const labelBuffer = await labelRes.arrayBuffer();
+    const labelData = Buffer.from(labelBuffer).toString('base64');
 
     return {
       statusCode: 200,
