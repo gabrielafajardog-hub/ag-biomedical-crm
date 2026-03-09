@@ -2826,8 +2826,7 @@ async function createFedExLabel() {
       }
       statusEl.innerHTML = '<span style="color:#27ae60">&#10003; Label created! Tracking: <strong>' + esc(data.trackingNumber) + '</strong></span>';
       btn.textContent = '✓ Done';
-      // Download ZPL file directly to send to Zebra printer
-      // Convert base64 PDF to blob and open
+     // Open PDF label in new tab
       var binary = atob(data.labelData);
       var bytes = new Uint8Array(binary.length);
       for (var i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
@@ -2835,8 +2834,6 @@ async function createFedExLabel() {
       var url = URL.createObjectURL(blob);
       window.open(url, '_blank');
       setTimeout(function(){ closeModal('label-modal'); }, 2000);
-    } else {
-      var msg = data.error || (data.errors && data.errors[0] && data.errors[0].message) || JSON.stringify(data);
       statusEl.innerHTML = '<span style="color:#e74c3c">Error: ' + esc(msg) + '</span>';
       btn.disabled = false;
       btn.textContent = '✈ Create Label';
