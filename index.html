@@ -1267,7 +1267,8 @@ function showApp(username, role) {
   document.getElementById('header-user').textContent = username;
   document.getElementById('header-role').textContent = role.charAt(0).toUpperCase()+role.slice(1);
   applyRoleToColumns();
-  filteredJobs = jobs.slice();
+  var uf = USER_FACILITIES[username] || null;
+  filteredJobs = uf ? jobs.filter(function(j){ return uf.indexOf(j.facility) >= 0; }) : jobs.slice();
   renderDashboard(); populateFilters(); renderTableHeader(); renderJobsTable(); applyRowFlags(); renderToday(); renderSnoozed();
 }
 
