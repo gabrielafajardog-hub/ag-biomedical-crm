@@ -351,6 +351,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
     <div id="view-jobs">
       <div class="page-header"><div><div class="page-title">Repair Jobs</div><div class="page-sub" id="jobs-subtitle">Loading...</div></div>
         <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="refreshFromDB()" title="Refresh data from database" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s" id="refresh-btn">&#8635; Sync</button>
           <button id="filter-open-btn" onclick="setClosedFilter('open')" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s">Open</button>
           <button id="filter-closed-btn" onclick="setClosedFilter('closed')" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s">Closed</button>
           <button id="filter-all-btn" onclick="setClosedFilter('all')" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);letter-spacing:.05em;cursor:pointer;transition:all .2s">All</button>
@@ -510,193 +511,48 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
           </div>
           <div class="form-field full">
             <label class="form-label">Building / Facility <span class="req">*</span></label>
-            <select class="form-select" id="f-facility" onchange="onFacilityChange()">
+            <select class="form-select" id="f-facility">
               <option value="">Select facility...</option>
               <option value="88th MDSS / SGSM">88th MDSS / SGSM</option>
-              <option value="AG Biomedical">AG Biomedical</option>
-              <option value="Above All Medical Parts">Above All Medical Parts</option>
-              <option value="Acevedo Medical Group">Acevedo Medical Group</option>
-              <option value="Advanced Urology of South Florida - TGH">Advanced Urology of South Florida - TGH</option>
-              <option value="Agiliti Health, Inc.">Agiliti Health, Inc.</option>
-              <option value="Alaris Infusion Pumps">Alaris Infusion Pumps</option>
-              <option value="Ambulatory Surgery Center of Boca Raton">Ambulatory Surgery Center of Boca Raton</option>
-              <option value="Ambulatory Surgery Center of Boca Raton - A&G">Ambulatory Surgery Center of Boca Raton - A&G</option>
-              <option value="Atlanta VA Medical Center">Atlanta VA Medical Center</option>
-              <option value="Audie L. Murphy VA Medical Center">Audie L. Murphy VA Medical Center</option>
-              <option value="Avante Health Solutions">Avante Health Solutions</option>
-              <option value="BAPTIST - Baptist Hospital">BAPTIST - Baptist Hospital</option>
-              <option value="BAPTIST - Baptist Hospital - A&G">BAPTIST - Baptist Hospital - A&G</option>
-              <option value="BAPTIST - Homestead Hospital">BAPTIST - Homestead Hospital</option>
-              <option value="BPI Medical">BPI Medical</option>
-              <option value="Baptist - Bethesda Hospital East">Baptist - Bethesda Hospital East</option>
-              <option value="Baptist - Bethesda Hospital West">Baptist - Bethesda Hospital West</option>
-              <option value="Baptist Health Miami Cancer Institute">Baptist Health Miami Cancer Institute</option>
-              <option value="Baptist Health South Florida">Baptist Health South Florida</option>
-              <option value="Bascom Palmer Eye Institute">Bascom Palmer Eye Institute</option>
-              <option value="Beckley VA Medical Center">Beckley VA Medical Center</option>
-              <option value="Biomedix Medical">Biomedix Medical</option>
-              <option value="Brooke Army Medical Center (BAMC)">Brooke Army Medical Center (BAMC)</option>
-              <option value="Brownsville - Valley Baptist Medical Center">Brownsville - Valley Baptist Medical Center</option>
-              <option value="CCSF - Tampa General Hospital (Palm Beach)">CCSF - Tampa General Hospital (Palm Beach)</option>
-              <option value="CCSF - Tampa General Hospital (Palm Springs)">CCSF - Tampa General Hospital (Palm Springs)</option>
-              <option value="CHOA - Scottish Rite Hospital">CHOA - Scottish Rite Hospital</option>
-              <option value="CIRACET CORP - Coral Gables Hospital">CIRACET CORP - Coral Gables Hospital</option>
-              <option value="CIRACET CORP - Florida Medical Center">CIRACET CORP - Florida Medical Center</option>
-              <option value="CIRACET CORP - Northshore Medical Center">CIRACET CORP - Northshore Medical Center</option>
-              <option value="CIRACET CORP - Palmetto General Hospital">CIRACET CORP - Palmetto General Hospital</option>
-              <option value="Central Health">Central Health</option>
-              <option value="Charming Smiles Dental Center">Charming Smiles Dental Center</option>
-              <option value="Children’s Mercy Kansas City">Children’s Mercy Kansas City</option>
-              <option value="Cleveland Clinic Weston Hospital">Cleveland Clinic Weston Hospital</option>
-              <option value="Coral Ridge Outpatient Center">Coral Ridge Outpatient Center</option>
-              <option value="Corporal Michael J. Crescenz VA Medical Center">Corporal Michael J. Crescenz VA Medical Center</option>
-              <option value="Dallas VA Medical Center">Dallas VA Medical Center</option>
-              <option value="Daytona Beach VA Clinic">Daytona Beach VA Clinic</option>
-              <option value="Deerfield Beach Outpatient SC">Deerfield Beach Outpatient SC</option>
-              <option value="Dr's Toy Store - c">Dr's Toy Store - c</option>
-              <option value="Dr. Kuppinger">Dr. Kuppinger</option>
-              <option value="Dr. Tim Gintz">Dr. Tim Gintz</option>
-              <option value="Duke University Hospital">Duke University Hospital</option>
-              <option value="Duniversal, S.A.">Duniversal, S.A.</option>
-              <option value="East Orange VA Medical Center">East Orange VA Medical Center</option>
-              <option value="Eisenhower Army Medical Center">Eisenhower Army Medical Center</option>
-              <option value="Elite Biomedical Solutions">Elite Biomedical Solutions</option>
-              <option value="Evolve Medical Solutions">Evolve Medical Solutions</option>
-              <option value="Fargo VA Health Care System">Fargo VA Health Care System</option>
-              <option value="Freedom Medical">Freedom Medical</option>
-              <option value="Global Light Co., LLC">Global Light Co., LLC</option>
-              <option value="Gopher Medical">Gopher Medical</option>
-              <option value="HSA HH LLC - Hialeah Hospital">HSA HH LLC - Hialeah Hospital</option>
-              <option value="HSA PGH LLC - Palmetto General Hospital">HSA PGH LLC - Palmetto General Hospital</option>
-              <option value="HSA PGH LLC - Palmetto General Hospital A&G">HSA PGH LLC - Palmetto General Hospital A&G</option>
-              <option value="Holy Cross Hospital">Holy Cross Hospital</option>
-              <option value="Hospital of the University of Pennsylvania – Cedar Avenue">Hospital of the University of Pennsylvania – Cedar Avenue</option>
-              <option value="INTERNATIONAL MEDICAL EQUIPMENT">INTERNATIONAL MEDICAL EQUIPMENT</option>
-              <option value="Inex Surgical">Inex Surgical</option>
-              <option value="Interfaith Medical Center">Interfaith Medical Center</option>
-              <option value="James A. Haley Veterans' Hospital">James A. Haley Veterans' Hospital</option>
-              <option value="Joe DiMaggio Children's Hospital">Joe DiMaggio Children's Hospital</option>
-              <option value="Jose Valentin">Jose Valentin</option>
-              <option value="Juan Luis Graterol">Juan Luis Graterol</option>
-              <option value="Kent Hospital">Kent Hospital</option>
-              <option value="Key Biscayne Surgery Center LLC">Key Biscayne Surgery Center LLC</option>
-              <option value="Lake Baldwin VA Clinic">Lake Baldwin VA Clinic</option>
-              <option value="Lakeland Regional Medical Center">Lakeland Regional Medical Center</option>
-              <option value="Larkin Community Hospital">Larkin Community Hospital</option>
-              <option value="Larkin Community Hospital Palm Springs">Larkin Community Hospital Palm Springs</option>
-              <option value="Lauderdale Urology Associates">Lauderdale Urology Associates</option>
-              <option value="Long Island Jewish Medical Center - Northwell Health">Long Island Jewish Medical Center - Northwell Health</option>
-              <option value="Major Ink Studios">Major Ink Studios</option>
-              <option value="Manchester VA Medical Center">Manchester VA Medical Center</option>
-              <option value="Medfusion Parts">Medfusion Parts</option>
-              <option value="Medical Maintenance">Medical Maintenance</option>
-              <option value="Medplex Outpatient Surgery Center">Medplex Outpatient Surgery Center</option>
-              <option value="Memorial Hospital Miramar">Memorial Hospital Miramar</option>
-              <option value="Memorial Hospital Pembroke">Memorial Hospital Pembroke</option>
-              <option value="Memorial Hospital West">Memorial Hospital West</option>
-              <option value="Memorial Regional Hospital">Memorial Regional Hospital</option>
-              <option value="Memorial Regional Hospital South">Memorial Regional Hospital South</option>
-              <option value="Methodist Hospital Sacramento MET">Methodist Hospital Sacramento MET</option>
-              <option value="Miami Lakes Surgery Center">Miami Lakes Surgery Center</option>
-              <option value="Miami Surgical Center">Miami Surgical Center</option>
-              <option value="Millennium Surgical Device Inc.">Millennium Surgical Device Inc.</option>
-              <option value="NCH - Baker Downtown Hospital">NCH - Baker Downtown Hospital</option>
-              <option value="NCH - North Naples Hospital">NCH - North Naples Hospital</option>
-              <option value="NYU Langone Hospital Brooklyn">NYU Langone Hospital Brooklyn</option>
-              <option value="Nicklaus Children's Hospital">Nicklaus Children's Hospital</option>
-              <option value="Northfield Medical">Northfield Medical</option>
-              <option value="ORTHODOXO">ORTHODOXO</option>
-              <option value="Orlando Health - Arnold Palmer Hospital for Children">Orlando Health - Arnold Palmer Hospital for Children</option>
-              <option value="Orlando Health - Bayfront Health">Orlando Health - Bayfront Health</option>
-              <option value="Orlando Health - Dr. P. Phillips Hospital">Orlando Health - Dr. P. Phillips Hospital</option>
-              <option value="Orlando Health - Horizon West Hospital">Orlando Health - Horizon West Hospital</option>
-              <option value="Orlando Health - Orlando Regional MC">Orlando Health - Orlando Regional MC</option>
-              <option value="Orlando Health - South Seminole Hospital">Orlando Health - South Seminole Hospital</option>
-              <option value="Orlando Health - Winnie Palmer Hospital">Orlando Health - Winnie Palmer Hospital</option>
-              <option value="PM Biomedical">PM Biomedical</option>
-              <option value="Palms Wellington Surgical Center">Palms Wellington Surgical Center</option>
-              <option value="Parkcreek Surgery Center">Parkcreek Surgery Center</option>
-              <option value="PartsSource">PartsSource</option>
-              <option value="Patient Monitoring Parts">Patient Monitoring Parts</option>
-              <option value="Penn Medicine Rittenhouse">Penn Medicine Rittenhouse</option>
-              <option value="Philadelphia VA Medical Center">Philadelphia VA Medical Center</option>
-              <option value="Philips Patient Monitoring">Philips Patient Monitoring</option>
-              <option value="Physicians Regional Medical Group - Collier">Physicians Regional Medical Group - Collier</option>
-              <option value="Physicians Regional Medical Group - Pine Ridge">Physicians Regional Medical Group - Pine Ridge</option>
-              <option value="Probo Medical">Probo Medical</option>
-              <option value="Providence VA Medical Center">Providence VA Medical Center</option>
-              <option value="RENOVO - Mount Sinai Medical Center">RENOVO - Mount Sinai Medical Center</option>
-              <option value="RGV Women's Health Center - Harlingen">RGV Women's Health Center - Harlingen</option>
-              <option value="Rapid Response Ambulance">Rapid Response Ambulance</option>
-              <option value="Renovo Solutions LLC">Renovo Solutions LLC</option>
-              <option value="Rocky Mountain Regional VA Medical Center">Rocky Mountain Regional VA Medical Center</option>
-              <option value="Ruben Espinoza">Ruben Espinoza</option>
-              <option value="SH Medical">SH Medical</option>
-              <option value="Salem VA Medical Center">Salem VA Medical Center</option>
-              <option value="Same Day Surgery Center Of Central Jersey">Same Day Surgery Center Of Central Jersey</option>
-              <option value="Select Biomedical LLC">Select Biomedical LLC</option>
-              <option value="Skeletal Dynamics">Skeletal Dynamics</option>
-              <option value="South Texas Health System Edinburg">South Texas Health System Edinburg</option>
-              <option value="Southlake Hospital - Orlando Health">Southlake Hospital - Orlando Health</option>
-              <option value="Sreekumar">Sreekumar</option>
-              <option value="St. Albans VA Medical Center">St. Albans VA Medical Center</option>
-              <option value="St. Luke’s Meridian Medical Center">St. Luke’s Meridian Medical Center</option>
-              <option value="St. Vincent’s Medical Center">St. Vincent’s Medical Center</option>
-              <option value="Step-Har Medical LLC">Step-Har Medical LLC</option>
-              <option value="Steward Health Care - Hialeah Hospital">Steward Health Care - Hialeah Hospital</option>
-              <option value="Steward Health Care - Palmetto General Hospital">Steward Health Care - Palmetto General Hospital</option>
-              <option value="Surgery Center of Aventura">Surgery Center of Aventura</option>
-              <option value="Surgery Center of Fort. Lauderdale">Surgery Center of Fort. Lauderdale</option>
-              <option value="Sutter Medical Center Sacramento">Sutter Medical Center Sacramento</option>
-              <option value="Sylvester - Comprehensive Cancer Center">Sylvester - Comprehensive Cancer Center</option>
-              <option value="TENET - Good Samaritan">TENET - Good Samaritan</option>
-              <option value="TENET - Northshore Medical Center">TENET - Northshore Medical Center</option>
-              <option value="TENET - St. Mary's Medical Center">TENET - St. Mary's Medical Center</option>
-              <option value="TENET - Valley Baptist Medical Center">TENET - Valley Baptist Medical Center</option>
-              <option value="TGH Brandon Healthplex">TGH Brandon Healthplex</option>
-              <option value="TGH General Surgeons of the Palm Beaches">TGH General Surgeons of the Palm Beaches</option>
-              <option value="TGH Heart & Vascular Institute - Boynton">TGH Heart & Vascular Institute - Boynton</option>
-              <option value="TGH North-Crystal River">TGH North-Crystal River</option>
-              <option value="TGH Out Patient Center">TGH Out Patient Center</option>
-              <option value="TGH Surgery Center at Morsani">TGH Surgery Center at Morsani</option>
-              <option value="TGMG - Itzhak Shasha">TGMG - Itzhak Shasha</option>
-              <option value="Tampa General Hospital">Tampa General Hospital</option>
-              <option value="Tampa General Hospital Concierge Health">Tampa General Hospital Concierge Health</option>
-              <option value="Teko Technicians Inc">Teko Technicians Inc</option>
-              <option value="Tenet - Delray Medical Center">Tenet - Delray Medical Center</option>
-              <option value="Tenet - Palm Beach Gardens Medical Center">Tenet - Palm Beach Gardens Medical Center</option>
-              <option value="Tenet - West Boca Medical Center">Tenet - West Boca Medical Center</option>
-              <option value="Texas Pain Physicians">Texas Pain Physicians</option>
-              <option value="The Lennar Foundation Medical Center">The Lennar Foundation Medical Center</option>
-              <option value="The Surgery Center at Doral">The Surgery Center at Doral</option>
-              <option value="UC San Diego Health">UC San Diego Health</option>
-              <option value="UCSF Benioff Children's Hospital">UCSF Benioff Children's Hospital</option>
-              <option value="UM - Converge Miami">UM - Converge Miami</option>
-              <option value="USPI - Coral Gables Surgery Center">USPI - Coral Gables Surgery Center</option>
-              <option value="USPI - SurgiCare of Miramar">USPI - SurgiCare of Miramar</option>
-              <option value="University Hospital (Newark)">University Hospital (Newark)</option>
-              <option value="University Hospital at Pennsylvania">University Hospital at Pennsylvania</option>
-              <option value="University Surgical Center">University Surgical Center</option>
-              <option value="University of Miami Hospital">University of Miami Hospital</option>
-              <option value="University of Miami Hospital (A&G)">University of Miami Hospital (A&G)</option>
-              <option value="Urology of St. Louis">Urology of St. Louis</option>
-              <option value="VA - Orlando VA Medical Center">VA - Orlando VA Medical Center</option>
-              <option value="VA Brooklyn Veterans Hospital">VA Brooklyn Veterans Hospital</option>
-              <option value="VA Indianapolis">VA Indianapolis</option>
-              <option value="VA Medical Center - Salisbury">VA Medical Center - Salisbury</option>
-              <option value="VA Medical Center Miami">VA Medical Center Miami</option>
-              <option value="VA Medical Center Miami - A&G">VA Medical Center Miami - A&G</option>
-              <option value="VA NY Harbor Healthcare System">VA NY Harbor Healthcare System</option>
-              <option value="VA North Texas Health Care System">VA North Texas Health Care System</option>
-              <option value="VA Northport">VA Northport</option>
-              <option value="VA Tomah">VA Tomah</option>
-              <option value="Valley Baptist Family Practice Residency Clinic">Valley Baptist Family Practice Residency Clinic</option>
-              <option value="Valomed">Valomed</option>
-              <option value="Viera VA Outpatient Clinic">Viera VA Outpatient Clinic</option>
-              <option value="Vitalife">Vitalife</option>
-              <option value="West Palm Beach VA Medical Center">West Palm Beach VA Medical Center</option>
-              <option value="William &quot;Bill&quot; Kling VA Clinic">William &quot;Bill&quot; Kling VA Clinic</option>
-              <option value="eBay Sales">eBay Sales</option>
+<option value="Acevedo Medical Group">Acevedo Medical Group</option>
+<option value="BAPTIST - Homestead Hospital">BAPTIST - Homestead Hospital</option>
+<option value="BPI Medical">BPI Medical</option>
+<option value="Brownsville - Valley Baptist Medical Center">Brownsville - Valley Baptist Medical Center</option>
+<option value="Cleveland Clinic Weston Hospital">Cleveland Clinic Weston Hospital</option>
+<option value="Coral Ridge Outpatient Center">Coral Ridge Outpatient Center</option>
+<option value="Hospital of the University of Pennsylvania – Cedar Avenue">Hospital of the University of Pennsylvania – Cedar Avenue</option>
+<option value="Joe DiMaggio Children's Hospital">Joe DiMaggio Children's Hospital</option>
+<option value="Long Island Jewish Medical Center - Northwell Health">Long Island Jewish Medical Center - Northwell Health</option>
+<option value="Memorial Hospital Miramar">Memorial Hospital Miramar</option>
+<option value="Memorial Hospital Pembroke">Memorial Hospital Pembroke</option>
+<option value="Memorial Hospital West">Memorial Hospital West</option>
+<option value="Memorial Regional Hospital">Memorial Regional Hospital</option>
+<option value="Methodist Hospital Sacramento MET">Methodist Hospital Sacramento MET</option>
+<option value="NCH - Baker Downtown Hospital">NCH - Baker Downtown Hospital</option>
+<option value="NCH - North Naples Hospital">NCH - North Naples Hospital</option>
+<option value="Nicklaus Children's Hospital">Nicklaus Children's Hospital</option>
+<option value="PartsSource">PartsSource</option>
+<option value="Penn Medicine Rittenhouse">Penn Medicine Rittenhouse</option>
+<option value="Physicians Regional Medical Group - Collier">Physicians Regional Medical Group - Collier</option>
+<option value="Physicians Regional Medical Group - Pine Ridge">Physicians Regional Medical Group - Pine Ridge</option>
+<option value="RENOVO - Mount Sinai Medical Center">RENOVO - Mount Sinai Medical Center</option>
+<option value="Rapid Response Ambulance">Rapid Response Ambulance</option>
+<option value="Sylvester - Comprehensive Cancer Center">Sylvester - Comprehensive Cancer Center</option>
+<option value="TENET - Good Samaritan">TENET - Good Samaritan</option>
+<option value="TENET - St. Mary's Medical Center">TENET - St. Mary's Medical Center</option>
+<option value="TENET - Valley Baptist Medical Center">TENET - Valley Baptist Medical Center</option>
+<option value="Tampa General Hospital">Tampa General Hospital</option>
+<option value="Tenet - Palm Beach Gardens Medical Center">Tenet - Palm Beach Gardens Medical Center</option>
+<option value="USPI - Coral Gables Surgery Center">USPI - Coral Gables Surgery Center</option>
+<option value="University of Miami Hospital">University of Miami Hospital</option>
+<option value="VA - Orlando VA Medical Center">VA - Orlando VA Medical Center</option>
+<option value="VA Indianapolis">VA Indianapolis</option>
+<option value="VA Medical Center Miami">VA Medical Center Miami</option>
+<option value="VA Medical Center Miami - A&G">VA Medical Center Miami - A&G</option>
+<option value="VA NY Harbor Healthcare System">VA NY Harbor Healthcare System</option>
+<option value="VA Northport">VA Northport</option>
+<option value="West Palm Beach VA Medical Center">West Palm Beach VA Medical Center</option>
+<option value="William "Bill" Kling VA Clinic">William "Bill" Kling VA Clinic</option>
             </select>
           </div>
           <div class="form-field">
@@ -704,7 +560,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
           </div>
           <div class="form-field">
             <label class="form-label">Technician Name <span class="req">*</span></label>
-            <select class="form-select" id="f-technician"><option value="">Select technician...</option></select>
+            <input type="text" class="form-input" id="f-technician" placeholder="Assigned technician">
           </div>
         </div>
       </div>
@@ -1083,12 +939,122 @@ var USER_EMAILS = {
 
 var ALL_USERNAMES = Object.keys(USER_EMAILS);
 
-// Load/save comments from localStorage
+// ═══════════════════════════════════════════════════════════════
+// SUPABASE CONFIG & HELPERS
+// ═══════════════════════════════════════════════════════════════
+var SB_URL = 'https://xurghevcibhieunkmlfx.supabase.co';
+var SB_KEY = 'sb_publishable_NuKBvRcowQc-lY6lDaP43A_7jdHEemg';
+
+function sbHeaders() {
+  return {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+}
+
+function sbGetAll(table) {
+  return fetch(SB_URL + '/rest/v1/' + table + '?select=*&order=opened.desc&limit=2000', {
+    headers: sbHeaders()
+  }).then(function(r){ return r.json(); });
+}
+
+function sbUpsert(table, row) {
+  return fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: Object.assign({}, sbHeaders(), {'Prefer': 'resolution=merge-duplicates,return=representation'}),
+    body: JSON.stringify(row)
+  }).then(function(r){ return r.json(); });
+}
+
+function sbDelete(table, id) {
+  return fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + encodeURIComponent(id), {
+    method: 'DELETE',
+    headers: sbHeaders()
+  });
+}
+
+// Normalize a DB row back to app object
+function sbRowToJob(r) {
+  if (typeof r.attachments === 'string') {
+    try { r.attachments = JSON.parse(r.attachments); } catch(e) {}
+  }
+  if (!r.attachments || typeof r.attachments !== 'object') {
+    r.attachments = {estimate:[],invoice:[],vendor:[],general:[],tech:[]};
+  }
+  r.calibrated = !!r.calibrated;
+  r.pm = !!r.pm;
+  return r;
+}
+
+function sbJobToRow(j) {
+  var r = Object.assign({}, j);
+  if (typeof r.attachments === 'object') r.attachments = JSON.stringify(r.attachments);
+  return r;
+}
+
+// Load jobs from Supabase — if empty, seed with hardcoded jobs
+function loadJobsFromSupabase(callback) {
+  sbGetAll('jobs').then(function(rows) {
+    if (Array.isArray(rows) && rows.length > 0) {
+      jobs = rows.map(sbRowToJob);
+      console.log('[SB] Loaded ' + jobs.length + ' jobs');
+    } else if (Array.isArray(rows) && rows.length === 0) {
+      console.log('[SB] Empty — seeding ' + jobs.length + ' jobs...');
+      seedJobsToSupabase();
+    }
+    if (callback) callback();
+  }).catch(function(e) {
+    console.warn('[SB] Load failed, using hardcoded data:', e);
+    if (callback) callback();
+  });
+}
+
+function seedJobsToSupabase() {
+  var rows = jobs.map(sbJobToRow);
+  function chunk(arr, n) { var r=[]; for(var i=0;i<arr.length;i+=n) r.push(arr.slice(i,i+n)); return r; }
+  var chunks = chunk(rows, 100);
+  var p = Promise.resolve();
+  chunks.forEach(function(c) {
+    p = p.then(function() {
+      return fetch(SB_URL + '/rest/v1/jobs', {
+        method: 'POST',
+        headers: Object.assign({}, sbHeaders(), {'Prefer': 'resolution=merge-duplicates'}),
+        body: JSON.stringify(c)
+      });
+    });
+  });
+  p.then(function(){ console.log('[SB] Seed complete'); })
+   .catch(function(e){ console.warn('[SB] Seed error:', e); });
+}
+
+function sbSaveJob(jobData) {
+  sbUpsert('jobs', sbJobToRow(jobData))
+    .catch(function(e){ console.warn('[SB] Save job error:', e); });
+}
+
+// ─── Comments: localStorage + Supabase sync ───────────────────
 function getComments(jobId) {
   try { return JSON.parse(localStorage.getItem('comments_' + jobId) || '[]'); } catch(e) { return []; }
 }
 function saveComments(jobId, comments) {
   localStorage.setItem('comments_' + jobId, JSON.stringify(comments));
+  sbUpsert('comments', {job_id: jobId, data: JSON.stringify(comments)})
+    .catch(function(e){ console.warn('[SB] Comments save error:', e); });
+}
+function syncCommentsFromSB(jobId, callback) {
+  fetch(SB_URL + '/rest/v1/comments?job_id=eq.' + encodeURIComponent(jobId) + '&select=data', {
+    headers: sbHeaders()
+  }).then(function(r){ return r.json(); }).then(function(rows) {
+    if (Array.isArray(rows) && rows.length > 0 && rows[0].data) {
+      try {
+        var c = JSON.parse(rows[0].data);
+        localStorage.setItem('comments_' + jobId, JSON.stringify(c));
+        if (callback) callback(c);
+      } catch(e) {}
+    }
+  }).catch(function(e){ console.warn('[SB] Comments sync error:', e); });
 }
 
 function addComment(jobId, text, isPrivate) {
@@ -1219,17 +1185,6 @@ var USERS = {
   'Katherine':{password:'KatherineAG',role:'warehouse'},
 };
 
-// ─── USER FACILITY ACCESS ─────────────────────────────────────────────────────
-var USER_FACILITIES = {
-  'Andrea':   null,
-  'Pedro':    null,
-  'Gabriela': null,
-  'Egidio':   null,
-  'Elio':     null,
-  'Katherine':null,
-  'Ana': ["Acevedo Medical Group","Advanced Urology of South Florida - TGH","Ambulatory Surgery Center of Boca Raton","BAPTIST - Baptist Hospital","Baptist - Bethesda Hospital East","Baptist - Bethesda Hospital West","BAPTIST - Homestead Hospital","Baptist Health Miami Cancer Institute","Bascom Palmer Eye Institute","CCSF - Tampa General Hospital (Palm Beach)","CCSF - Tampa General Hospital (Palm Springs)","Charming Smiles Dental Center","Coral Ridge Outpatient Center","Holy Cross Hospital","HSA PGH LLC - Palmetto General Hospital","HSA PGH LLC - Palmetto General Hospital A&G","Interfaith Medical Center","Joe DiMaggio Children's Hospital","Key Biscayne Surgery Center LLC","Larkin Community Hospital","Larkin Community Hospital Palm Springs","Lauderdale Urology Associates","Memorial Hospital Miramar","Memorial Hospital Pembroke","Memorial Hospital West","Memorial Regional Hospital","Miami Lakes Surgery Center","Miami Surgical Center","NCH - Baker Downtown Hospital","NCH - North Naples Hospital","Nicklaus Children's Hospital","Palms Wellington Surgical Center","Parkcreek Surgery Center","Physicians Regional Medical Group - Collier","Physicians Regional Medical Group - Pine Ridge","Rapid Response Ambulance","RENOVO - Mount Sinai Medical Center","Skeletal Dynamics","Surgery Center of Aventura","Surgery Center of Fort. Lauderdale","Sylvester - Comprehensive Cancer Center","TENET - Delray Medical Center","TENET - Good Samaritan","TENET - Northshore Medical Center","TENET - Palm Beach Gardens Medical Center","TENET - St. Mary's Medical Center","Tenet - West Boca Medical Center","The Lennar Foundation Medical Center","The Surgery Center at Doral","UM - Converge Miami","University of Miami Hospital","VA Medical Center Miami","Viera VA Outpatient Clinic","West Palm Beach VA Medical Center","William \"Bill\" Kling VA Clinic"]
-};
-
 // What each role CANNOT see (sections hidden in detail + form)
 var ROLE_HIDE = {
   admin:      [],
@@ -1256,7 +1211,17 @@ function login(username, password) {
   if (!u || u.password !== password) return false;
   localStorage.setItem('crm_user', username);
   localStorage.setItem('crm_role', u.role);
-  showApp(username, u.role);
+  // Show loading then sync
+  document.getElementById('login-screen').style.display='none';
+  var loadDiv = document.createElement('div');
+  loadDiv.id = 'sb-loading';
+  loadDiv.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999;font-family:var(--sans);color:var(--text-muted);font-size:14px;gap:10px;';
+  loadDiv.innerHTML = '<div style="width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite"></div> Syncing with database…';
+  document.body.appendChild(loadDiv);
+  loadJobsFromSupabase(function() {
+    loadDiv.remove();
+    showApp(username, u.role);
+  });
   return true;
 }
 
@@ -1267,8 +1232,7 @@ function showApp(username, role) {
   document.getElementById('header-user').textContent = username;
   document.getElementById('header-role').textContent = role.charAt(0).toUpperCase()+role.slice(1);
   applyRoleToColumns();
-  var uf = USER_FACILITIES[username] || null;
-  filteredJobs = uf ? jobs.filter(function(j){ return uf.indexOf(j.facility) >= 0; }) : jobs.slice();
+  filteredJobs = jobs.slice();
   renderDashboard(); populateFilters(); renderTableHeader(); renderJobsTable(); applyRowFlags(); renderToday(); renderSnoozed();
 }
 
@@ -1365,10 +1329,8 @@ function renderDashboard() {
 
 // ─── FILTERS & TABLE ─────────────────────────────────────────────────────────
 function populateFilters() {
-  var userFacilities = USER_FACILITIES[currentUser] || null;
   var mfrs=[...new Set(jobs.map(function(j){return j.manufacturer;}))].sort();
-  var allFacils=[...new Set(jobs.map(function(j){return j.facility;}))].sort();
-  var facils = userFacilities ? allFacils.filter(function(f){return userFacilities.indexOf(f)>=0;}) : allFacils;
+  var facils=[...new Set(jobs.map(function(j){return j.facility;}))].sort();
   var msel=document.getElementById('filter-mfr'),mcur=msel.value;
   msel.innerHTML='<option value="">All Manufacturers</option>'+mfrs.map(function(m){return '<option value="'+esc(m)+'"'+(m===mcur?' selected':'')+'>'+esc(m)+'</option>';}).join('');
   var fsel=document.getElementById('filter-facility'),fcur=fsel.value;
@@ -1386,7 +1348,6 @@ function populateFilters() {
 
 function filterJobs() {
   var q=document.getElementById('search-input').value.toLowerCase();
-  var userFacilities = USER_FACILITIES[currentUser] || null;
   var type=document.getElementById('filter-type').value;
   var status=document.getElementById('filter-status').value;
   var mfr=document.getElementById('filter-mfr').value;
@@ -1397,8 +1358,7 @@ function filterJobs() {
     if (closedFilter === 'open' && j.closed) return false;
     if (closedFilter === 'closed' && !j.closed) return false;
     var match=!q||Object.values(j).some(function(v){return typeof v==='string'&&v.toLowerCase().indexOf(q)>=0;});
-    var facilityAllowed = !userFacilities || userFacilities.indexOf(j.facility) >= 0;
-    return facilityAllowed&&match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
+    return match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
   });
   sortJobs();currentPage=1;renderJobsTable();applyRowFlags();
   document.getElementById('jobs-subtitle').textContent=filteredJobs.length+' of '+jobs.length+' requests · '+[...new Set(jobs.map(function(j){return j.facility;}))].length+' facilities';
@@ -1632,14 +1592,7 @@ function openEditJobModal(id) {
   document.getElementById('f-type').value=j.type||'';
   document.getElementById('f-facility').value=j.facility||'';
 
-  onFacilityChange();
-      document.getElementById('f-technician').value=j.technician||'';
-      // If not in list, add it
-      var techSel = document.getElementById('f-technician');
-      if (j.technician && !Array.from(techSel.options).some(function(o){return o.value===j.technician;})) {
-        var o = document.createElement('option'); o.value=j.technician; o.textContent=j.technician;
-        techSel.appendChild(o); techSel.value=j.technician;
-      }
+  document.getElementById('f-technician').value=j.technician||'';
   document.getElementById('f-manufacturer').value=j.manufacturer||'';
   document.getElementById('f-model').value=j.model||'';
   document.getElementById('f-serial').value=j.serial||'';
@@ -1791,6 +1744,8 @@ function saveJob() {
     jobData.id='NEW'+(maxN+1);
     jobs.unshift(jobData);
   }
+  // Persist to Supabase
+  sbSaveJob(jobData);
   closeModal('job-modal');
   populateFilters();filterJobs();renderDashboard();
 }
@@ -1805,6 +1760,8 @@ function openDetail(id) {
   var j=jobs.find(function(x){return x.id===id;});
   if(!j) return;
   currentDetailId=id;
+  // Background sync comments from Supabase
+  syncCommentsFromSB(id, function(){ renderComments(id); });
   document.getElementById('detail-title').textContent='Job #'+j.id;
   document.getElementById('detail-subtitle').textContent=(j.type||'')+' · '+j.facility;
   var sopts=STATUS_OPTS.map(function(s){return '<option'+(j.status===s?' selected':'')+'>'+s+'</option>';}).join('');
@@ -1889,10 +1846,12 @@ function updateStatus(){
   var j=jobs.find(function(x){return x.id===currentDetailId;});
   if(!j) return;
   j.status=document.getElementById('status-sel').value;
+  sbSaveJob(j);
   closeModal('detail-modal');filterJobs();renderDashboard();
 }
 function deleteCurrentJob(){
   if(!confirm('Delete this job permanently?')) return;
+  sbDelete('jobs', currentDetailId).catch(function(e){ console.warn('[SB] Delete error:', e); });
   jobs=jobs.filter(function(j){return j.id!==currentDetailId;});
   closeModal('detail-modal');closeModal('job-modal');filterJobs();renderDashboard();
 }
@@ -1933,10 +1892,7 @@ function saveNewCustomer(){
   customers.push(newC);
   // Also add to facility dropdowns
   var opt=document.createElement('option');opt.value=name;opt.textContent=name;
-  var uf = USER_FACILITIES[currentUser] || null;
-  if (!uf || uf.indexOf(opt.value) >= 0) {
-    document.getElementById('f-facility').appendChild(opt.cloneNode(true));
-  }
+  document.getElementById('f-facility').appendChild(opt.cloneNode(true));
   closeModal('new-customer-modal');renderCustomers();
 }
 
@@ -2170,9 +2126,7 @@ function renderToday() {
   var readyPO = [];
 
   var snoozedIds = getSnoozed();
-  var _uf = USER_FACILITIES[currentUser] || null;
   jobs.forEach(function(j) {
-    if (_uf && _uf.indexOf(j.facility) < 0) return; // restrict by user facility access
     if (snoozedIds.indexOf(j.id) >= 0) return; // skip permanently snoozed
     if (isSnoozedTimed(j.id)) return; // skip timed snooze
     var s = j.status || '';
@@ -2828,8 +2782,34 @@ function updateCloseBtn(isClosed) {
   }
 }
 
+// ─── REFRESH FROM DB ────────────────────────────────────────────────────────
+function refreshFromDB() {
+  var btn = document.getElementById('refresh-btn');
+  if (btn) { btn.textContent = '⟳ Syncing…'; btn.disabled = true; }
+  loadJobsFromSupabase(function() {
+    if (btn) { btn.textContent = '✓ Synced'; btn.disabled = false; setTimeout(function(){ btn.textContent = '⟳ Sync'; }, 2000); }
+    populateFilters(); filterJobs(); renderDashboard();
+  });
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
-(function(){var u=localStorage.getItem('crm_user');var r=localStorage.getItem('crm_role');if(u&&r&&USERS[u]) showApp(u,r);})();
+(function(){
+  var u=localStorage.getItem('crm_user');
+  var r=localStorage.getItem('crm_role');
+  if(u&&r&&USERS[u]) {
+    // Show a brief loading state
+    document.getElementById('login-screen').style.display='none';
+    var loadDiv = document.createElement('div');
+    loadDiv.id = 'sb-loading';
+    loadDiv.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999;font-family:var(--sans);color:var(--text-muted);font-size:14px;gap:10px;';
+    loadDiv.innerHTML = '<div style="width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite"></div> Syncing with database…';
+    document.body.appendChild(loadDiv);
+    loadJobsFromSupabase(function() {
+      loadDiv.remove();
+      showApp(u, r);
+    });
+  }
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // FEDEX LABEL CREATION
@@ -2913,17 +2893,6 @@ function openLabelForm(mode) {
     document.getElementById('lbl-company').value = facility;
     document.getElementById('lbl-name').value = tech ? ('Attn: ' + tech) : '';
     document.getElementById('lbl-desc').value = desc + (po ? ' | PO: ' + po : '');
-    // Auto-fill address from facility data
-    if (facility && FACILITY_DATA[facility]) {
-      var fd = FACILITY_DATA[facility];
-      if (fd.street) document.getElementById('lbl-street').value = fd.street;
-      if (fd.city)   document.getElementById('lbl-city').value   = fd.city;
-      if (fd.state)  document.getElementById('lbl-state').value  = fd.state;
-      if (fd.zip)    document.getElementById('lbl-zip').value    = fd.zip;
-      if (fd.phone)  document.getElementById('lbl-phone').value  = fd.phone;
-      var fedexEl = document.getElementById('lbl-fedex-account');
-      if (fedexEl && fd.fedex) fedexEl.value = fd.fedex;
-    }
 
     // Build banner
     var bannerParts = [];
@@ -3043,42 +3012,6 @@ document.addEventListener('click',function(e){
   var th=e.target.closest('th[data-sort]');
   if(th) sortBy(th.getAttribute('data-sort'));
 });
-
-// ─── FACILITY DATA ────────────────────────────────────────────────────────────
-var FACILITY_DATA = {"88th MDSS / SGSM": {"street": "88th Medical Group Wright-Patterson Air Force Base, 4881 Sugar Maple Drive, Ohio 45433-5529, Attn. Biomed", "city": "", "state": "", "zip": "", "phone": "937-257-5636", "technicians": ["Mike Collings", "James Sottile", "Sabrina Matos", "Samuel Rundle"], "fedex": ""}, "Above All Medical Parts": {"street": "106 Academy Street", "city": "Bayport", "state": "NY", "zip": "11705", "phone": "631-419-6544", "technicians": [], "fedex": ""}, "Acevedo Medical Group": {"street": "2400 nw 54th st miami fl 33142", "city": "", "state": "", "zip": "", "phone": "3056339090", "technicians": [], "fedex": ""}, "Advanced Urology of South Florida - TGH": {"street": "5350 West Atlantic Avenue, Suite 102, Delray Beach, Fl 33484", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Frank Knoedler"], "fedex": ""}, "AG Biomedical": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Egidio Andrade", "Victor Rincones"], "fedex": ""}, "Agiliti Health, Inc.": {"street": "*Bill to:*, 11095 Viking Dr, Suite 300", "city": "Eden Prairie", "state": "MN", "zip": "55344", "phone": "", "technicians": [], "fedex": ""}, "Alaris Infusion Pumps": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Ambulatory Surgery Center of Boca Raton": {"street": "Ambulatory Surgery Center of Boca Raton, 1905 Clint Moore Rd #300", "city": "Boca Raton", "state": "FL", "zip": "33496", "phone": "", "technicians": ["Luis Montero"], "fedex": ""}, "Ambulatory Surgery Center of Boca Raton - A&G": {"street": "Ambulatory Surgery Center of Boca Raton, 1905 Clint Moore Rd #300", "city": "Boca Raton", "state": "FL", "zip": "33496", "phone": "", "technicians": ["Luis Montero"], "fedex": ""}, "Atlanta VA Medical Center": {"street": "1670 Clairmont Rd", "city": "Decatur", "state": "GA", "zip": "30033", "phone": "", "technicians": ["Javid Farouk", "Jason Park", "Richard Julye"], "fedex": ""}, "Audie L. Murphy VA Medical Center": {"street": "7400", "city": "Merton MinterSan Antonio", "state": "TX", "zip": "78229", "phone": "", "technicians": ["Julian Diaz"], "fedex": ""}, "Avante Health Solutions": {"street": "212 Avenida Fabricante", "city": "San Clemente", "state": "CA", "zip": "92672", "phone": "(760) 881-6853", "technicians": ["Jamie Kindell"], "fedex": "733318473"}, "BAPTIST - Baptist Hospital": {"street": "8900 N Kendall Drive", "city": "Miami", "state": "FL", "zip": "33176", "phone": "", "technicians": ["Elia Flores", "Edgar Echeverria", "KEN"], "fedex": ""}, "BAPTIST - Baptist Hospital - A&G": {"street": "Consolidated Distribution Center, 9001 NW 33 Street", "city": "Doral", "state": "FL", "zip": "33172-1235", "phone": "", "technicians": ["Elia Flores", "Edgar Echeverria"], "fedex": ""}, "Baptist - Bethesda Hospital East": {"street": "2815 S Seacrest Blvd.", "city": "Boynton Beach", "state": "FL", "zip": "33435", "phone": "", "technicians": ["Donald Sandy"], "fedex": ""}, "Baptist - Bethesda Hospital West": {"street": "9655 W Boynton Beach Blvd", "city": "Boynton Beach", "state": "FL", "zip": "33472", "phone": "", "technicians": ["Leonardo Elvir"], "fedex": ""}, "BAPTIST - Homestead Hospital": {"street": "975 Baptist Way", "city": "Homestead", "state": "FL", "zip": "33033", "phone": "", "technicians": ["Tony Quesada", "Cedric Armstrong"], "fedex": ""}, "Baptist Health Miami Cancer Institute": {"street": "8900 N Kendall Drive", "city": "Miami", "state": "FL", "zip": "33176", "phone": "", "technicians": [], "fedex": ""}, "Baptist Health South Florida": {"street": "1500 San Remo Avenue, Suite 350 |", "city": "Coral Gables", "state": "FL", "zip": "33146", "phone": "", "technicians": [], "fedex": ""}, "Bascom Palmer Eye Institute": {"street": "305 UHCORP, UM Accounts Payable, P.O. Box 248066", "city": "Coral Gables", "state": "FL", "zip": "33124", "phone": "", "technicians": ["Dorys Rivas", "Allan Walker"], "fedex": "255768450"}, "Beckley VA Medical Center": {"street": "200 Veterans Ave", "city": "Beckley", "state": "WV", "zip": "25801", "phone": "", "technicians": ["Randall Dunkle", "Ed Smith", "Stacy Jonhson"], "fedex": ""}, "Biomedix Medical": {"street": "979 Penn Green Rd", "city": "Avondale", "state": "PA", "zip": "19311", "phone": "", "technicians": [], "fedex": "332444727"}, "BPI Medical": {"street": "5417 12th St E", "city": "Fife", "state": "WA", "zip": "98424", "phone": "253-882-5040", "technicians": [], "fedex": ""}, "Brooke Army Medical Center (BAMC)": {"street": "3551 Roger Brooke Dr", "city": "Fort Sam Houston", "state": "TX", "zip": "78234", "phone": "", "technicians": ["Sierra Matsumoto"], "fedex": ""}, "Brownsville - Valley Baptist Medical Center": {"street": "1040 W Jefferson St", "city": "Brownsville", "state": "TX", "zip": "78520", "phone": "", "technicians": ["Biomed"], "fedex": ""}, "CCSF - Tampa General Hospital (Palm Beach)": {"street": "ATTN. Katie Noll, BSN, RN, 11621 Kew Gardens Ave, Suite 101A", "city": "Palm Beach Gardens", "state": "FL", "zip": "33410", "phone": "", "technicians": ["Michael Robinson", "Janet"], "fedex": "916464622"}, "CCSF - Tampa General Hospital (Palm Springs)": {"street": "1630 South Congress Avenue, Suite 200", "city": "Palm Springs", "state": "FL", "zip": "33461", "phone": "", "technicians": ["Michael Robinson", "Janet"], "fedex": "916464622"}, "Central Health": {"street": "Orlando Health , Attn: Accounts Payable, PO Box 562008", "city": "Orlando", "state": "FL", "zip": "32856-2008", "phone": "(407) 296-1710", "technicians": ["Kevin Coffey", "Chris Arjune", "Sean Johnson", "Jadniel Ferrer", "Evan Kurnia"], "fedex": "191625846"}, "Charming Smiles Dental Center": {"street": "401 Coral Way (LeJeune & Miracle Mile) , Suite 305, Coral Gables, Fl 33134", "city": "", "state": "", "zip": "", "phone": "786.360.6812", "technicians": ["Dr. Gema Hernandez"], "fedex": ""}, "Children’s Mercy Kansas City": {"street": "2401 Gillham Rd", "city": "Kansas City", "state": "MO", "zip": "64108", "phone": "", "technicians": ["Dominick Pritchard", "Zach Kubinski"], "fedex": ""}, "CHOA - Scottish Rite Hospital": {"street": "SCOTTISH RITE DISTRIBUTION CENTER, CHILDREN'S HEALTHCARE OF ATLANTA, 1001 JOHNSON FERRY ROAD", "city": "ATLANTA", "state": "GA", "zip": "30342", "phone": "", "technicians": [], "fedex": ""}, "CIRACET CORP - Coral Gables Hospital": {"street": "CIRACET CORP - PGH, 2831 BLVD. Luis A Ferre, Suite 201, Ponce, Puerto Rico 00717, Puerto Rico , Coral Gables Hospital, 3100 S Douglas Rd", "city": "Coral Gables", "state": "FL", "zip": "33134", "phone": "", "technicians": ["Mildred Pereira", "Alberto Fernandez"], "fedex": ""}, "CIRACET CORP - Florida Medical Center": {"street": "CIRACET CORP - NSMC, 2831 BLVD. Luis A Ferre, Suite 201, Ponce, Puerto Rico 00717, Puerto Rico , Florida Medical Center, 5000 W Oakland Park Blvd", "city": "Fort Lauderdale", "state": "FL", "zip": "33313", "phone": "", "technicians": ["Brian Flores", "Elizabeth Guadalupe"], "fedex": ""}, "CIRACET CORP - Northshore Medical Center": {"street": "CIRACET CORP - NSMC, 2831 BLVD. Luis A Ferre, Suite 201, Ponce, Puerto Rico 00717, Puerto Rico , Northshore Medical Center, 1100 NW 95th St", "city": "Miami", "state": "FL", "zip": "33150", "phone": "", "technicians": ["Bibu Koshy", "Elizabeth Guadalupe"], "fedex": ""}, "CIRACET CORP - Palmetto General Hospital": {"street": "CIRACET CORP - PGH, 2831 BLVD. Luis A Ferre, Suite 201, Ponce, Puerto Rico 00717, Puerto Rico , PALMETTO GENERAL HOSPITAL , 2001 W. 68th Street", "city": "Hialeah", "state": "FL", "zip": "33016", "phone": "", "technicians": ["William Fernandez", "Mc Donald's", "Thomas", "Loren Galicia", "Elizabeth Guadalupe"], "fedex": ""}, "Cleveland Clinic Weston Hospital": {"street": "3100 Weston Rd", "city": "Weston", "state": "FL", "zip": "33331", "phone": "", "technicians": ["Susana, Henry, Jairo"], "fedex": ""}, "Coral Ridge Outpatient Center": {"street": "5301 N Dixie Hwy", "city": "Oakland Park", "state": "FL", "zip": "33334", "phone": "", "technicians": [], "fedex": ""}, "Corporal Michael J. Crescenz VA Medical Center": {"street": "3900 Woodland Avenue", "city": "Philadelphia", "state": "PA", "zip": "19104", "phone": "", "technicians": [], "fedex": ""}, "Dallas VA Medical Center": {"street": "4500 S Lancaster Rd", "city": "Dallas", "state": "TX", "zip": "75216", "phone": "", "technicians": ["Jerry Burris", "Esteban Nunez", "Julian Dixon", "Freddrik Taylor", "Carlisa Cooper", "Byron Evans", "Lisa Bailey", "Paul", "Seth", "Alcione Herrron", "Betty Hunter"], "fedex": ""}, "Daytona Beach VA Clinic": {"street": "1776 N Williamson Blvd", "city": "Daytona Beach", "state": "FL", "zip": "32117", "phone": "", "technicians": ["Biomed", "Dion Ramey"], "fedex": ""}, "Deerfield Beach Outpatient SC": {"street": "250 SW Natura Ave", "city": "Deerfield Beach", "state": "FL", "zip": "33441", "phone": "", "technicians": [], "fedex": ""}, "Dr. Kuppinger": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Dr. Tim Gintz": {"street": "20 Rockbound Ln", "city": "Alfred", "state": "ME", "zip": "04002", "phone": "253-381-2632", "technicians": ["Dr Tim Gintz"], "fedex": ""}, "Dr's Toy Store - c": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Duke University Hospital": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Duniversal, S.A.": {"street": "Diagonal 6, 10-50, Edificio Interamericas Torre Norte, Nivel 12, Oficina 12-4A, Zona 1, Ciudad de Guatemala, Ship to:, Luis Mario Juarez/DUniversal, 1 AEROPOST WAY GUA-52036", "city": "MIAMI", "state": "FL", "zip": "33206-3206", "phone": "", "technicians": ["Luis Mario Juarez"], "fedex": ""}, "East Orange VA Medical Center": {"street": "385 Tremont Ave", "city": "East Orange", "state": "NJ", "zip": "07018", "phone": "", "technicians": ["Corey Crawley"], "fedex": ""}, "eBay Sales": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Eisenhower Army Medical Center": {"street": "Billing Address: , Eisenhower Army Medical Center , Biomedical Engineering Services , 300 East Hospital Road , Room 3J-14", "city": "Fort Eisenhower", "state": "GA", "zip": "30905", "phone": "", "technicians": ["Randolph Cothran", "Jonathan Roundtree"], "fedex": ""}, "Elite Biomedical Solutions": {"street": "756 Old State Route 74, Suite C", "city": "Cincinnati", "state": "OH", "zip": "45245", "phone": "", "technicians": [], "fedex": ""}, "Evolve Medical Solutions": {"street": "EVOLVE MEDICAL SOLUTIONS, LLC, 11406 Bridge Pine Dr, Riverview, Fl 33569", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Enid Figueroa"], "fedex": ""}, "Fargo VA Health Care System": {"street": "2101 Elm St N", "city": "Fargo", "state": "ND", "zip": "58102", "phone": "", "technicians": [], "fedex": ""}, "Freedom Medical": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Global Light Co., LLC": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Gopher Medical": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Steve"], "fedex": ""}, "Holy Cross Hospital": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Luis Cardenas"], "fedex": ""}, "Hospital of the University of Pennsylvania – Cedar Avenue": {"street": "501 S 54th Street", "city": "Philadelphia", "state": "PA", "zip": "19143", "phone": "", "technicians": [], "fedex": ""}, "HSA HH LLC - Hialeah Hospital": {"street": "HSA HH LLC, Eduardo Gonzalez , ATTN: BIOMED , 651 E 25th St", "city": "Hialeah", "state": "FL", "zip": "33013", "phone": "", "technicians": ["Eduardo Gonzalez", "Lazaro Alvarez"], "fedex": ""}, "HSA PGH LLC - Palmetto General Hospital": {"street": "PALMETTO GENERAL HOSPITAL – PO # , 2001 W. 68th Street", "city": "Hialeah", "state": "FL", "zip": "33016", "phone": "", "technicians": ["Loren Galicia"], "fedex": ""}, "HSA PGH LLC - Palmetto General Hospital A&G": {"street": "PALMETTO GENERAL HOSPITAL – PO # , 2001 W. 68th Street", "city": "Hialeah", "state": "FL", "zip": "33016", "phone": "", "technicians": ["William Fernandez", "Mc Donald's", "Thomas", "Loren Galicia"], "fedex": ""}, "Inex Surgical": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Interfaith Medical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "INTERNATIONAL MEDICAL EQUIPMENT": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "James A. Haley Veterans' Hospital": {"street": "Attn: PO #xxxxxx/Biomed, Allen Madore (Room GD-022, Mail Code 138B) , 13000 Bruce B. Downs Blvd", "city": "Tampa", "state": "FL", "zip": "33612-4745", "phone": "", "technicians": ["Ron McNeil", "Allen Madore", "Jorge Rivera", "Vanessa Thomison", "Justin Crompton", "Larry Perez", "Khalifa, Engy K."], "fedex": ""}, "Joe DiMaggio Children's Hospital": {"street": "Joe DiMaggio Children's Hospital Dock, 1005 Joe DiMaggio Drive", "city": "Hollywood", "state": "FL", "zip": "33021", "phone": "", "technicians": ["Maurice", "Gary", "Jonathan", "Manny", "Axisa", "Emmanuel Rodriguez", "Felipe Trevino", "Camilo Marrero", "Monica Becerra"], "fedex": "284427033"}, "Jose Valentin": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Jose Valentin"], "fedex": ""}, "Juan Luis Graterol": {"street": "Veronica Graterol, 7796 NW 71st ST, Miami, Fl 33166", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Juan Luis Graterol", "Veronica Graterol"], "fedex": ""}, "Kent Hospital": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Walid Soliman"], "fedex": ""}, "Key Biscayne Surgery Center LLC": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Lake Baldwin VA Clinic": {"street": "5201 Raymond St", "city": "Orlando", "state": "FL", "zip": "32803", "phone": "", "technicians": ["Brian Kirkbride", "Arthur Lykins"], "fedex": ""}, "Lakeland Regional Medical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Bill"], "fedex": ""}, "Larkin Community Hospital": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Ionmarie"], "fedex": ""}, "Larkin Community Hospital Palm Springs": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Ernesto", "Belkys"], "fedex": ""}, "Lauderdale Urology Associates": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Lori Schneider"], "fedex": ""}, "Long Island Jewish Medical Center - Northwell Health": {"street": "Northwell Health, ACCTS PAYABLE, PO BOX 3856", "city": "NEW HYDE PARK", "state": "NY", "zip": "11040", "phone": "", "technicians": ["Nick Acevedo", "Benjamin", "Aaron", "Juan", "Markus Richey", "Ernest Mars"], "fedex": ""}, "Major Ink Studios": {"street": "6420 NW 5th Way", "city": "Fort Lauderdale", "state": "FL", "zip": "33309", "phone": "", "technicians": [], "fedex": ""}, "Manchester VA Medical Center": {"street": "718 Smyth Rd", "city": "Manchester", "state": "NH", "zip": "03104", "phone": "", "technicians": [], "fedex": ""}, "Medfusion Parts": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Medical Maintenance": {"street": "1450 Oakbrook Dr, Suite 150", "city": "Norcross", "state": "GA", "zip": "30093", "phone": "", "technicians": ["Jose Torres"], "fedex": ""}, "Medplex Outpatient Surgery Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Memorial Hospital Miramar": {"street": "Memorial Hospital Miramar, 1901 SW 172 Avenue", "city": "Miramar", "state": "FL", "zip": "33029", "phone": "", "technicians": ["Christina Alfonso", "Nicolas Bouillon", "Gary Guralsky", "Haniff", "Jackson"], "fedex": ""}, "Memorial Hospital Pembroke": {"street": "7800 Sheridan St", "city": "Pembroke Pines", "state": "FL", "zip": "33026", "phone": "", "technicians": ["Philip Brown", "Gary Guralsky", "Nick Puffer", "Kean Dennis", "Christina Alfonso", "Anselmo Marrero", "Sergio Escobar"], "fedex": ""}, "Memorial Hospital West": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Mayra Becerra", "Sunil Adimathra", "Nick Puffer", "Jinna Avendano", "Sergio Escobar", "Dave"], "fedex": "284427033"}, "Memorial Regional Hospital": {"street": "3501 Johnson Street, Attn: Clinical Engineering", "city": "Hollywood", "state": "FL", "zip": "33021", "phone": "", "technicians": ["Emmanuel Rodriguez", "Camilo Marrero", "Philip Brown", "Monica Becerra", "Axisa Biddy", "Felipe Trevino", "Maurice Clarke", "Steven Swoyer"], "fedex": ""}, "Memorial Regional Hospital South": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Crystal", "Gary", "Camilo"], "fedex": ""}, "Methodist Hospital Sacramento MET": {"street": "Attn. BIOMED, 7500 HOSPITAL DR", "city": "Sacramento", "state": "CA", "zip": "95823-5403", "phone": "", "technicians": ["Alvaro Tapia"], "fedex": ""}, "Miami Lakes Surgery Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Miami Surgical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Janessa Penagos", "Ray Espinosa"], "fedex": ""}, "Millennium Surgical Device Inc.": {"street": "3002 Ave Antonio R Barcelo , Suite 25 , Cayey PR, 00736", "city": "", "state": "", "zip": "", "phone": "787-263-3936, 787-263-3488", "technicians": ["Manuel Rodriguez Crespo"], "fedex": ""}, "NCH - Baker Downtown Hospital": {"street": "350 7th St N", "city": "Naples", "state": "FL", "zip": "34102", "phone": "239-624-2350 / Phone: 2396242356", "technicians": ["Ronald Shapiro", "Victor Lanniri", "Valeriu Pandrea", "Alexandru Mihailov", "Samuel Erwin"], "fedex": ""}, "NCH - North Naples Hospital": {"street": "11190 Healthpark Blvd, Naples, Florida 34110, Billing address, Sodexo CTM 7100 Commerce Way, Ste 280", "city": "Brentwood", "state": "TN", "zip": "37027", "phone": "", "technicians": ["Sarah Red", "Jared Ribic", "Raul Lopez"], "fedex": ""}, "Nicklaus Children's Hospital": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Florelena Martin", "Florencia", "Francisco"], "fedex": ""}, "Northfield Medical": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "NYU Langone Hospital Brooklyn": {"street": "150 55th St", "city": "Brooklyn", "state": "NY", "zip": "11220", "phone": "", "technicians": [], "fedex": ""}, "Orlando Health - Arnold Palmer Hospital for Children": {"street": "92 W Miller St", "city": "Orlando", "state": "FL", "zip": "32806", "phone": "", "technicians": ["Donald Graham"], "fedex": "191634527"}, "Orlando Health - Bayfront Health": {"street": "701 6th St. S.", "city": "St. Petersburg", "state": "FL", "zip": "33701", "phone": "", "technicians": ["Tori Penton", "Jason Gero", "Philip Clough"], "fedex": "191634527"}, "Orlando Health - Dr. P. Phillips Hospital": {"street": "9400 Turkey Lake Rd", "city": "Orlando", "state": "FL", "zip": "32819", "phone": "", "technicians": ["Hector Restrepo", "Canty Javares", "David Maldonado", "Jose Santos", "Kenny Williams"], "fedex": "191625846"}, "Orlando Health - Horizon West Hospital": {"street": "17000 Porter Rd.", "city": "Winter Garden", "state": "FL", "zip": "34787", "phone": "4074071209", "technicians": ["Austin Rodriguez"], "fedex": "191625846"}, "Orlando Health - Orlando Regional MC": {"street": "Orlando Health - Orlando Regional Medical Ctr, 45 W. Sturtevant St.", "city": "Orlando", "state": "FL", "zip": "32806", "phone": "", "technicians": ["Angel Diaz", "Rachna Patel", "Dana Lovik", "Donald Clutters", "Patrick Henry"], "fedex": "191625846"}, "Orlando Health - South Seminole Hospital": {"street": "Attn: Accounts Payable , PO Box 562008", "city": "Orlando", "state": "FL", "zip": "32856", "phone": "", "technicians": ["Roger Faggen"], "fedex": "191625846"}, "Orlando Health - Winnie Palmer Hospital": {"street": "83 W Miller St", "city": "Orlando", "state": "FL", "zip": "32806", "phone": "", "technicians": ["Angel Rios", "Rita Vitela", "Gerard Delprado", "Karuna Jaipaul", "Jerome Garcia", "Tyffanie Flanagan", "Christian Carbo"], "fedex": "191634527"}, "ORTHODOXO": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Palms Wellington Surgical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Parkcreek Surgery Center": {"street": "6806 North State Road 7", "city": "Coconut Creek", "state": "FL", "zip": "33073", "phone": "Phone: 954-312-3572", "technicians": ["Sonny Bermudez"], "fedex": ""}, "PartsSource": {"street": "*Bill-to:*, PartsSource, 777 Lena Drive", "city": "Aurora", "state": "OH", "zip": "44202", "phone": "", "technicians": ["* Warren Wade"], "fedex": ""}, "Patient Monitoring Parts": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Penn Medicine Rittenhouse": {"street": "PMRH - PENN MEDICINE AT RITTENHOUSE, 1800 LOMBARD STREET", "city": "PHILADELPHIA", "state": "PA", "zip": "19146", "phone": "", "technicians": ["Alsander Merriman"], "fedex": ""}, "Philadelphia VA Medical Center": {"street": "3900 Woodland Ave", "city": "Philadelphia", "state": "PA", "zip": "19104", "phone": "", "technicians": [], "fedex": ""}, "Philips Patient Monitoring": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Physicians Regional Medical Group - Collier": {"street": "Bill To:, 814 902 Accounting, Physicians Reg Medical Ctr Collier Blvd, Attn. Accounting, 8300 Collier Blvd", "city": "Naples", "state": "FL", "zip": "34114", "phone": "", "technicians": ["Pavel Sereda"], "fedex": ""}, "Physicians Regional Medical Group - Pine Ridge": {"street": "BILL TO, 819 902Accounting, Physicians Regional Medical Center, 6101 Pine Ridge Rd, Naples, Fl 34119, SHIP TO, 819 Pine Ridge Stores, Physicians Regional Medical Pine Ridge, 6101 Pine Ridge Rd, Naples, Fl 34119, FedEx Account# 418298928", "city": "", "state": "", "zip": "", "phone": "239-348-4454", "technicians": ["Lesvin Perez", "Mike Daniel"], "fedex": ""}, "PM Biomedical": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Mo Shehadeh"], "fedex": ""}, "Probo Medical": {"street": "9715 Kincaid Dr., Ste. 1000", "city": "Fishers", "state": "IN", "zip": "46037", "phone": "866.828.1800", "technicians": [], "fedex": ""}, "Providence VA Medical Center": {"street": "830 Chalkstone Ave", "city": "Providence", "state": "RI", "zip": "02908", "phone": "", "technicians": [], "fedex": ""}, "Rapid Response Ambulance": {"street": "Shipping:, Rapid Response Ambulance, 555 Sawgrass Corporate Parkway", "city": "Sunrise", "state": "FL", "zip": "33325", "phone": "", "technicians": ["Steven"], "fedex": ""}, "RENOVO - Mount Sinai Medical Center": {"street": "MT SINAI MEDICAL CENTER, 4300 Alton RD , Miami Beach, FL, 33140", "city": "", "state": "", "zip": "", "phone": "786-366-9056", "technicians": [], "fedex": ""}, "Renovo Solutions LLC": {"street": "ATTN RENOVO-BIOMED, MOUNT SINAI MEDICAL CENTER, 4300 ALTON ROAD", "city": "MIAMI BEACH", "state": "FL", "zip": "33140", "phone": "", "technicians": [], "fedex": ""}, "RGV Women's Health Center - Harlingen": {"street": "2230 Haine Dr", "city": "Harlingen", "state": "TX", "zip": "78550", "phone": "", "technicians": ["Ralph Garza"], "fedex": ""}, "Rocky Mountain Regional VA Medical Center": {"street": "1700 N Wheeling St", "city": "Aurora", "state": "CO", "zip": "80045", "phone": "", "technicians": ["Florencia Manno"], "fedex": ""}, "Ruben Espinoza": {"street": "2569 Marbill Rd, West Palm Beach, FL. 33406", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Salem VA Medical Center": {"street": "970 Roanoke Blvd", "city": "Salem", "state": "VA", "zip": "24153", "phone": "", "technicians": ["Manuel Bonet", "Stephanie Vasquez"], "fedex": ""}, "Same Day Surgery Center Of Central Jersey": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Willy"], "fedex": ""}, "Select Biomedical LLC": {"street": "Select P.O.S. & Peripherals, LLC, 7275 Bush Lake Rd", "city": "Minneapolis", "state": "MN", "zip": "55439", "phone": "", "technicians": [], "fedex": ""}, "SH Medical": {"street": "3061 NW 82 Ave", "city": "Miami", "state": "FL", "zip": "33122", "phone": "", "technicians": ["Izabella Becerra", "Fernando Salvade"], "fedex": ""}, "Skeletal Dynamics": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Carlos Bella"], "fedex": ""}, "South Texas Health System Edinburg": {"street": "1102 W Trenton Rd", "city": "Edinburg", "state": "TX", "zip": "78539", "phone": "", "technicians": [], "fedex": ""}, "Southlake Hospital - Orlando Health": {"street": "1900 Don Wickham Dr", "city": "Clermont", "state": "FL", "zip": "34711", "phone": "", "technicians": ["Kevin Coffey", "Eric Rivadeneira", "Javares Canty", "Fawwaaz Ali", "Deborah"], "fedex": "191634527"}, "Sreekumar": {"street": "Fouad Commercial Center, No. 6, Opp. Al Tazj, Khalib Ibn Waleed St., Jeddah, K.S.A.", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Kumar"], "fedex": ""}, "St. Albans VA Medical Center": {"street": "179-00 Linden Boulevard", "city": "Queens", "state": "NY", "zip": "11424-1468", "phone": "", "technicians": ["Konstantino Doikos"], "fedex": ""}, "St. Luke’s Meridian Medical Center": {"street": "520 South Eagle Rd", "city": "Meridian", "state": "ID", "zip": "83642", "phone": "", "technicians": ["Ryan Walker"], "fedex": ""}, "St. Vincent’s Medical Center": {"street": "TRIMEDX, 5451 Lakeview Parkway S Drive", "city": "INDIANAPOLIS", "state": "IN", "zip": "46268", "phone": "", "technicians": ["Julio Carmona"], "fedex": ""}, "Step-Har Medical LLC": {"street": "11237 Slater Ave", "city": "Fountain Valley", "state": "CA", "zip": "92708", "phone": "", "technicians": ["Stephen Doan"], "fedex": ""}, "Steward Health Care - Hialeah Hospital": {"street": "Eduardo Gonzalez , ATTN: BIOMED , 651 E 25th St", "city": "Hialeah", "state": "FL", "zip": "33013", "phone": "", "technicians": ["Eduardo Gonzalez"], "fedex": ""}, "Steward Health Care - Palmetto General Hospital": {"street": "PALMETTO GENERAL HOSPITAL – PO # , 2001 W. 68th Street", "city": "Hialeah", "state": "FL", "zip": "33016", "phone": "", "technicians": ["William Fernandez", "Mc Donald's", "Thomas", "Loren Galicia"], "fedex": ""}, "Surgery Center of Aventura": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Surgery Center of Fort. Lauderdale": {"street": "4485 FL-7", "city": "Lauderdale Lakes", "state": "FL", "zip": "33319", "phone": "", "technicians": ["Jean Pierre Velazquez"], "fedex": ""}, "Sutter Medical Center Sacramento": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Sylvester - Comprehensive Cancer Center": {"street": "UHealth Towers (UMIAMI BIO), 1475 NW 12th Ave", "city": "Miami", "state": "FL", "zip": "33136-1002", "phone": "", "technicians": ["Jennifer Williams", "Allan Walker", "Gabriela Falcon", "Chris Rivera", "UHCORP"], "fedex": "255768450"}, "Tampa General Hospital": {"street": "1 Tampa General Cir", "city": "Tampa", "state": "FL", "zip": "33606-3571", "phone": "", "technicians": ["Namon Burke", "Jonathan Boucourt", "Jose Villada", "Kevin Weber", "Mike Tijerina", "Kyle Rossignol", "Will Hart", "Sergio Zamudio", "Brandon Thompson", "George Little", "Brad Taylor", "Daniel Strain", "Edward Ramos", "Roen Rebollos", "Michael Jackson", "Rodney Northern", "Jose E. De Jesus", "Michael Robinson", "Timothy Galvin", "Denzel Delhomme", "Matt Dever", "Cory Dinterman", "Abby Barba"], "fedex": "916464622"}, "Tampa General Hospital Concierge Health": {"street": "4620 PGA Boulevard #101", "city": "Palm Beach Gardens", "state": "FL", "zip": "33418", "phone": "", "technicians": [], "fedex": ""}, "Teko Technicians Inc": {"street": "Teko Technicians Inc, 12943 SE Suzanne Dr", "city": "Hobe Sound", "state": "FL", "zip": "33475", "phone": "", "technicians": ["Jason Neering", "Rebecca Schwartz"], "fedex": ""}, "Tenet - Delray Medical Center": {"street": "5352 Linton Blvd", "city": "Delray Beach", "state": "FL", "zip": "33484", "phone": "", "technicians": ["Ruben Espinoza", "Steven Kane"], "fedex": ""}, "TENET - Good Samaritan": {"street": "Cynthia Smith, 1309 N Flagler Dr", "city": "West Palm Beach", "state": "FL", "zip": "33401", "phone": "", "technicians": ["Cynthia Smith", "Michael Trimm", "Franklyn Dillon"], "fedex": ""}, "TENET - Northshore Medical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Tenet - Palm Beach Gardens Medical Center": {"street": "3360 Burns Rd", "city": "Palm Beach Gardens", "state": "FL", "zip": "33410", "phone": "", "technicians": ["Anthony  Anderson"], "fedex": ""}, "TENET - St. Mary's Medical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Yakov Roytshteyn"], "fedex": ""}, "TENET - Valley Baptist Medical Center": {"street": "2101 PEASE STREET", "city": "HARLINGEN", "state": "TX", "zip": "78550", "phone": "", "technicians": [], "fedex": ""}, "Tenet - West Boca Medical Center": {"street": "21644 State Rd 7", "city": "West Boca", "state": "FL", "zip": "33428", "phone": "", "technicians": [], "fedex": ""}, "Texas Pain Physicians": {"street": "5520 LBJ Freeway Ste. 200, Dallas, Texas 75240", "city": "", "state": "", "zip": "", "phone": "(972) 636-5727, Ext.6331", "technicians": ["Elhadji Thiam"], "fedex": ""}, "TGH Brandon Healthplex": {"street": "10740 Palm River Road", "city": "Tampa", "state": "FL", "zip": "33619", "phone": "", "technicians": ["Kavaisi Thomas"], "fedex": "916464622"}, "TGH General Surgeons of the Palm Beaches": {"street": "1201 N Olive Ave", "city": "West Palm Beach", "state": "FL", "zip": "33401", "phone": "", "technicians": [], "fedex": "916464622"}, "TGH Heart & Vascular Institute - Boynton": {"street": "1880 N Congress Ave Ste 301", "city": "Boynton Beach", "state": "FL", "zip": "33426", "phone": "", "technicians": ["Michael Robinson", "Amy Mostafavi"], "fedex": "916464622"}, "TGH North-Crystal River": {"street": "6201 N Suncoast Blvd", "city": "Crystal River", "state": "FL", "zip": "34428", "phone": "", "technicians": ["Jeremy C. Krause"], "fedex": "916464622"}, "TGH Out Patient Center": {"street": "10740 Palm River Rd, STE. 210", "city": "Tampa", "state": "FL", "zip": "33619", "phone": "", "technicians": ["JONATHAN BOUCOURT"], "fedex": "916464622"}, "TGH Surgery Center at Morsani": {"street": "12901 Bruce B. Downs Blvd. MDC-02", "city": "Tampa", "state": "FL", "zip": "33612", "phone": "", "technicians": ["Michael Robinson", "Kavaisi Thomas"], "fedex": "916464622"}, "TGMG - Itzhak Shasha": {"street": "12901 Bruce B. Downs Blvd. MDC-02", "city": "Tampa", "state": "FL", "zip": "33612", "phone": "", "technicians": ["Theresa"], "fedex": "916464622"}, "The Lennar Foundation Medical Center": {"street": "1400 NW 12th Ave", "city": "Miami", "state": "FL", "zip": "33136", "phone": "", "technicians": ["Cesar Aguilar"], "fedex": "255768450"}, "The Surgery Center at Doral": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Juan Arias"], "fedex": ""}, "UC San Diego Health": {"street": "9300 Campus Point Drive, LA JOLLA", "city": "CA", "state": "US", "zip": "92037", "phone": "", "technicians": ["Moses Awotona", "Alfredo de la O", "Rexini  Andrade"], "fedex": ""}, "UCSF Benioff Children's Hospital": {"street": "747 52nd St", "city": "Oakland", "state": "CA", "zip": "94609", "phone": "", "technicians": ["Nicholas Bennet", "Boski Modi", "Dan Dublin"], "fedex": ""}, "UM - Converge Miami": {"street": "1951 NW 7th Ave", "city": "Miami", "state": "FL", "zip": "33136", "phone": "", "technicians": [], "fedex": ""}, "University Hospital (Newark)": {"street": "150 Bergen St", "city": "Newark", "state": "NJ", "zip": "07103", "phone": "", "technicians": ["Joe Jacob - Manager"], "fedex": ""}, "University Hospital at Pennsylvania": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "University of Miami Hospital": {"street": "UHCORP, 1400 NW 12th Ave, UHealth Tower-East 4037", "city": "Miami", "state": "FL", "zip": "33136-1003", "phone": "", "technicians": ["David Mesa", "John Aribon", "Monica", "Jason", "Carlos Rivera", "Emmanuel Lys", "Robert Kersha, Jr", "John Aribon"], "fedex": "255768450"}, "University of Miami Hospital (A&G)": {"street": "UHCORP, 1400 NW 12th Ave, UHealth Tower-East 4037", "city": "Miami", "state": "FL", "zip": "33136-1003", "phone": "", "technicians": [], "fedex": "255768450"}, "University Surgical Center": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Urology of St. Louis": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Erin Krieger"], "fedex": ""}, "USPI - Coral Gables Surgery Center": {"street": "2645 Douglas Road, Suite 400, Miami, Florida 33133", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Diana Couso"], "fedex": ""}, "USPI - SurgiCare of Miramar": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Milly Amadeo", "Yuyu", "Greg"], "fedex": ""}, "VA - Orlando VA Medical Center": {"street": "13800 Veterans Way", "city": "Orlando", "state": "FL", "zip": "32827", "phone": "", "technicians": ["Brian Kirkbride", "Brian Whitaker", "Florencia Manno", "Jorge Perez", "Edward Reyes", "Geron Rogers", "John Bresnahan", "Xavier Betts", "Rocky Mackall", "Ronald Ragbir"], "fedex": ""}, "VA Brooklyn Veterans Hospital": {"street": "800 POLY PL, ATTN. BIOMED", "city": "BROOKLYN", "state": "NY", "zip": "11209", "phone": "", "technicians": ["Marc Zuckerman", "Gregory Riccardi", "Kirit Patel", "Konstantino Doikos", "Andres Restrepo", "Hussein Badawi"], "fedex": ""}, "VA Indianapolis": {"street": "1481 W. 10th St, Indianapolis, 46202", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Steve Lawrence", "Anne Cunningham"], "fedex": ""}, "VA Medical Center - Salisbury": {"street": "1601 Brenner Ave", "city": "Salisbury", "state": "NC", "zip": "28144", "phone": "", "technicians": ["Jim Cherry"], "fedex": ""}, "VA Medical Center Miami": {"street": "1201 NW 16th St", "city": "Miami", "state": "FL", "zip": "33125", "phone": "", "technicians": ["Jose Valentin", "Angel Garrido", "Kris Desruisseaux", "Angela Zaza", "Yoranimo Torres", "Marcellus Milton", "Victor Santos", "Sucre Modesto", "Joel Rosabal", "Javid Farouk", "Wendell Claytor"], "fedex": ""}, "VA Medical Center Miami - A&G": {"street": "1201 NW 16th St", "city": "Miami", "state": "FL", "zip": "33125", "phone": "", "technicians": ["Jose Valentin", "Victor Santos"], "fedex": ""}, "VA North Texas Health Care System": {"street": "2300 Marie Curie BLVD", "city": "Garland", "state": "TX", "zip": "75042", "phone": "", "technicians": [], "fedex": ""}, "VA Northport": {"street": "79 Middleville Rd.", "city": "Northport", "state": "NY", "zip": "11768", "phone": "", "technicians": ["Sean Sookdeo", "Ivan Comice", "Michael Faggioni", "Wilson Michael", "Maria Victoria Gutierrez", "Kalaivani Prabu"], "fedex": ""}, "VA NY Harbor Healthcare System": {"street": "423 E 23rd St", "city": "New York", "state": "NY", "zip": "10010", "phone": "", "technicians": ["Francis Barnets", "Lela Tsiklauri", "Jonathan Iglesias", "Benjamin Chin", "Wei Cheng Lin"], "fedex": ""}, "VA Tomah": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Valley Baptist Family Practice Residency Clinic": {"street": "2222 Benwood Street |", "city": "Harlingen", "state": "TX", "zip": "78550", "phone": "(956) 389-2445", "technicians": [], "fedex": ""}, "Valomed": {"street": "39927 Old Lee Hwy Suite 101B", "city": "Fairfax", "state": "VA", "zip": "22030", "phone": "", "technicians": [], "fedex": ""}, "Viera VA Outpatient Clinic": {"street": "", "city": "", "state": "", "zip": "", "phone": "", "technicians": [], "fedex": ""}, "Vitalife": {"street": "1590 Calle Cavalieri", "city": "San Juan", "state": "PR", "zip": "00927", "phone": "7872479613", "technicians": ["Francisco Massa", "Wesley Garcia", "Carlos Diaz", "Josy Rodriguez", "Wilbert Morales"], "fedex": ""}, "West Palm Beach VA Medical Center": {"street": "7305 N Military Trl, West Palm Beach, Fl 33410, Attn. Biomed", "city": "", "state": "", "zip": "", "phone": "", "technicians": ["Joselindo Ocampo", "Nick", "Ken", "Wendy", "Jorge Perez", "John", "Angela", "Christopher Mai", "Preston Marfil", "Ronnie Cozart", "Nick Albert"], "fedex": ""}, "William \"Bill\" Kling VA Clinic": {"street": "9800 W Commercial Blvd", "city": "Sunrise", "state": "FL", "zip": "33351", "phone": "", "technicians": ["Jerome Jacobs"], "fedex": ""}};
-
-function onFacilityChange() {
-  var name = document.getElementById('f-facility').value;
-  var techSel = document.getElementById('f-technician');
-  techSel.innerHTML = '<option value="">Select technician...</option>';
-  if (!name || !FACILITY_DATA[name]) return;
-  var data = FACILITY_DATA[name];
-  // Populate technician dropdown
-  (data.technicians || []).forEach(function(t) {
-    var o = document.createElement('option');
-    o.value = t; o.textContent = t;
-    techSel.appendChild(o);
-  });
-  // If only one tech, auto-select
-  if ((data.technicians || []).length === 1) {
-    techSel.value = data.technicians[0];
-  }
-}
-
-function onFacilityChangeLabel(mode) {
-  // Called when facility changes in label form — auto-fill address
-  var name = document.getElementById('f-facility') ? document.getElementById('f-facility').value : '';
-  if (!name || !FACILITY_DATA[name]) return;
-  var data = FACILITY_DATA[name];
-  if (mode === 'return') {
-    if (data.street) document.getElementById('lbl-street') && (document.getElementById('lbl-street').value = data.street);
-    if (data.city)   document.getElementById('lbl-city')   && (document.getElementById('lbl-city').value   = data.city);
-    if (data.state)  document.getElementById('lbl-state')  && (document.getElementById('lbl-state').value  = data.state);
-    if (data.zip)    document.getElementById('lbl-zip')    && (document.getElementById('lbl-zip').value    = data.zip);
-    if (data.phone)  document.getElementById('lbl-phone')  && (document.getElementById('lbl-phone').value  = data.phone);
-    if (data.fedex)  document.getElementById('lbl-fedex-account') && (document.getElementById('lbl-fedex-account').value = data.fedex);
-  }
-}
 </script>
 </div><!-- /app-shell -->
 </body>
