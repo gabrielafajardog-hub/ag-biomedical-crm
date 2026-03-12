@@ -2273,9 +2273,11 @@ function renderToday() {
   var pinnedList = document.getElementById('list-pinned');
   var pinnedCount = document.getElementById('count-pinned');
   if (pinnedIds.length) {
-    var allTodayItems = needsEstimate.concat(pendingApproval).concat(approvedWaiting).concat(noVendor);
+    // Pull pinned jobs directly from ALL jobs — not just today's filtered sections
     var pinnedJobs = pinnedIds.map(function(pid){
-      return allTodayItems.find(function(item){ return String(item.j.id) === String(pid); });
+      var j = jobs.find(function(j){ return String(j.id) === String(pid); });
+      if (!j) return null;
+      return {j:j, days: daysSince(j.opened)};
     }).filter(Boolean);
     if (pinnedJobs.length) {
       pinnedSec.style.display = 'block';
