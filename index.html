@@ -943,7 +943,7 @@ var ALL_USERNAMES = Object.keys(USER_EMAILS);
 // SUPABASE CONFIG & HELPERS
 // ═══════════════════════════════════════════════════════════════
 var SB_URL = 'https://xurghevcibhieunkmlfx.supabase.co';
-var SB_KEY = 'sb_publishable_NuKBvRcowQc-lY6lDaP43A_7jdHEemg';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1cmdoZXZjaWJoaWV1bmttbGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwMjksImV4cCI6MjA4ODkxOTAyOX0.m8_vo1IFfHWeNVsBA7JdtKugC27p-3gkstJEu4AAD1o';
 
 function sbHeaders() {
   return {
@@ -1956,13 +1956,23 @@ var _snoozedTimedCache = null; // {id: timestamp}
 function _pinsRowId() { return currentUser || 'anonymous'; }
 
 function _savePinsToSB() {
-  sbUpsert('pins', {
+  if (!currentUser) { console.warn('[SB] _savePinsToSB: no currentUser, skipping'); return; }
+  var payload = {
     user_id: _pinsRowId(),
     pinned: JSON.stringify(_pinCache || []),
     snoozed: JSON.stringify(_snoozeCache || []),
     snoozed_timed: JSON.stringify(_snoozedTimedCache || {}),
     updated_at: new Date().toISOString()
-  }).catch(function(e){ console.warn('[SB] pins save error:', e); });
+  };
+  console.log('[SB] saving pins for', currentUser, payload);
+  fetch(SB_URL + '/rest/v1/pins', {
+    method: 'POST',
+    headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=representation'},
+    body: JSON.stringify(payload)
+  }).then(function(r){
+    if (!r.ok) { r.text().then(function(t){ console.error('[SB] pins save error', r.status, t); }); }
+    else { console.log('[SB] pins saved OK for', currentUser); }
+  }).catch(function(e){ console.error('[SB] pins network error:', e); });
   // keep localStorage in sync as instant fallback
   localStorage.setItem('crm_pinned', JSON.stringify(_pinCache || []));
   localStorage.setItem('crm_snoozed', JSON.stringify(_snoozeCache || []));
@@ -1983,10 +1993,11 @@ function loadPinsFromSB(callback) {
       localStorage.setItem('crm_snoozed', JSON.stringify(_snoozeCache));
       localStorage.setItem('crm_snoozed_timed', JSON.stringify(_snoozedTimedCache));
     } else {
-      // no row yet — seed from localStorage
-      try { _pinCache = JSON.parse(localStorage.getItem('crm_pinned') || '[]'); } catch(e){ _pinCache = []; }
-      try { _snoozeCache = JSON.parse(localStorage.getItem('crm_snoozed') || '[]'); } catch(e){ _snoozeCache = []; }
-      try { _snoozedTimedCache = JSON.parse(localStorage.getItem('crm_snoozed_timed') || '{}'); } catch(e){ _snoozedTimedCache = {}; }
+      // no row yet — start fresh (localStorage was cleared on login to prevent stale cross-user data)
+      console.log('[SB] no pins row for', currentUser, '- starting fresh');
+      _pinCache = [];
+      _snoozeCache = [];
+      _snoozedTimedCache = {};
     }
     if (callback) callback();
   }).catch(function(e){
