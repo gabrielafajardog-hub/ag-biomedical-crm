@@ -1218,6 +1218,11 @@ function login(username, password) {
   localStorage.setItem('crm_role', u.role);
   // Set currentUser BEFORE loading so pin/snooze load for the right user
   currentUser = username; currentRole = u.role;
+  // CRITICAL: wipe localStorage pins so a previous user's cached pins don't show
+  localStorage.removeItem('crm_pinned');
+  localStorage.removeItem('crm_snoozed');
+  localStorage.removeItem('crm_snoozed_timed');
+  _pinCache = null; _snoozeCache = null; _snoozedTimedCache = null;
   // Show loading then sync
   document.getElementById('login-screen').style.display='none';
   var loadDiv = document.createElement('div');
@@ -2863,6 +2868,11 @@ function refreshFromDB() {
   if(u&&r&&USERS[u]) {
     // Set currentUser BEFORE loading so pins load for the right user
     currentUser = u; currentRole = r;
+    // Wipe localStorage pins so stale cached pins don't show before SB loads
+    localStorage.removeItem('crm_pinned');
+    localStorage.removeItem('crm_snoozed');
+    localStorage.removeItem('crm_snoozed_timed');
+    _pinCache = null; _snoozeCache = null; _snoozedTimedCache = null;
     // Show a brief loading state
     document.getElementById('login-screen').style.display='none';
     var loadDiv = document.createElement('div');
