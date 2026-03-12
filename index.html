@@ -1256,7 +1256,7 @@ function showApp(username, role) {
   document.getElementById('header-user').textContent = username;
   document.getElementById('header-role').textContent = role.charAt(0).toUpperCase()+role.slice(1);
   applyRoleToColumns();
-  filteredJobs = jobs.slice();
+  filterJobs();
   renderDashboard(); populateFilters(); renderTableHeader(); renderJobsTable(); applyRowFlags(); renderToday(); renderSnoozed();
 }
 
@@ -1329,25 +1329,27 @@ function showView(name, el) {
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
 function renderDashboard() {
-  var repair=jobs.filter(function(j){return j.type==='Repair Request';}).length;
-  var warranty=jobs.filter(function(j){return j.type==='Warranty Request';}).length;
-  var purchase=jobs.filter(function(j){return j.type==='Purchase Request';}).length;
-  document.getElementById('stat-total').textContent=jobs.length;
+  var userFacilities = USER_FACILITIES[currentUser] || null;
+  var visibleJobs = userFacilities ? jobs.filter(function(j){ return userFacilities.indexOf(j.facility) >= 0; }) : jobs;
+  var repair=visibleJobs.filter(function(j){return j.type==='Repair Request';}).length;
+  var warranty=visibleJobs.filter(function(j){return j.type==='Warranty Request';}).length;
+  var purchase=visibleJobs.filter(function(j){return j.type==='Purchase Request';}).length;
+  document.getElementById('stat-total').textContent=visibleJobs.length;
   document.getElementById('stat-repair').textContent=repair;
   document.getElementById('stat-warranty').textContent=warranty;
   document.getElementById('stat-purchase').textContent=purchase;
-  document.getElementById('nav-open-count').textContent=jobs.length;
-  var mc={};jobs.forEach(function(j){mc[j.manufacturer]=(mc[j.manufacturer]||0)+1;});
+  document.getElementById('nav-open-count').textContent=visibleJobs.length;
+  var mc={};visibleJobs.forEach(function(j){mc[j.manufacturer]=(mc[j.manufacturer]||0)+1;});
   var ms=Object.entries(mc).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
   var mm=ms[0]?ms[0][1]:1;
   document.getElementById('mfr-chart').innerHTML=ms.map(function(p){return '<div class="bar-row"><div class="bar-label">'+esc(p[0])+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(p[1]/mm*100)+'%"></div></div><div class="bar-count">'+p[1]+'</div></div>';}).join('');
-  var sc={};jobs.forEach(function(j){sc[j.status]=(sc[j.status]||0)+1;});
+  var sc={};visibleJobs.forEach(function(j){sc[j.status]=(sc[j.status]||0)+1;});
   var ss=Object.entries(sc).sort(function(a,b){return b[1]-a[1];});
   var sm=ss[0]?ss[0][1]:1;
   document.getElementById('status-chart').innerHTML=ss.map(function(p){return '<div class="bar-row"><div class="bar-label">'+esc(p[0])+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(p[1]/sm*100)+'%"></div></div><div class="bar-count">'+p[1]+'</div></div>';}).join('');
-  var recent=jobs.slice().sort(function(a,b){return b.id.localeCompare(a.id);}).slice(0,6);
+  var recent=visibleJobs.slice().sort(function(a,b){return b.id.localeCompare(a.id);}).slice(0,6);
   document.getElementById('recent-list').innerHTML=recent.map(function(j){return '<div class="recent-item"><div class="recent-id">#'+esc(j.id)+'</div><div class="recent-desc">'+esc(j.manufacturer)+' '+esc(j.model)+'</div><div class="recent-date">'+fmtDate(j.opened)+'</div></div>';}).join('');
-  var pos={};jobs.filter(function(j){return j.po;}).forEach(function(j){pos[j.po]=(pos[j.po]||0)+1;});
+  var pos={};visibleJobs.filter(function(j){return j.po;}).forEach(function(j){pos[j.po]=(pos[j.po]||0)+1;});
   var pl=Object.entries(pos).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
   document.getElementById('po-list').innerHTML=pl.length?pl.map(function(p){return '<div class="recent-item"><div class="recent-id" style="width:120px">'+esc(p[0])+'</div><div class="recent-desc">'+p[1]+' job'+(p[1]>1?'s':'')+' linked</div></div>';}).join(''):'<div style="padding:8px;color:var(--text-muted);font-size:12px">No PO numbers recorded.</div>';
 }
