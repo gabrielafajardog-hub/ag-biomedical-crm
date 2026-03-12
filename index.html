@@ -1216,6 +1216,8 @@ function login(username, password) {
   if (!u || u.password !== password) return false;
   localStorage.setItem('crm_user', username);
   localStorage.setItem('crm_role', u.role);
+  // Set currentUser BEFORE loading so pin/snooze load for the right user
+  currentUser = username; currentRole = u.role;
   // Show loading then sync
   document.getElementById('login-screen').style.display='none';
   var loadDiv = document.createElement('div');
@@ -2859,6 +2861,8 @@ function refreshFromDB() {
   var u=localStorage.getItem('crm_user');
   var r=localStorage.getItem('crm_role');
   if(u&&r&&USERS[u]) {
+    // Set currentUser BEFORE loading so pins load for the right user
+    currentUser = u; currentRole = r;
     // Show a brief loading state
     document.getElementById('login-screen').style.display='none';
     var loadDiv = document.createElement('div');
