@@ -1190,6 +1190,18 @@ var USERS = {
   'Katherine':{password:'KatherineAG',role:'warehouse'},
 };
 
+// ─── USER FACILITY ACCESS ─────────────────────────────────────────────────────
+// null = access to all facilities; array = restricted to listed facilities only
+var USER_FACILITIES = {
+  'Andrea':   null,
+  'Pedro':    null,
+  'Gabriela': null,
+  'Egidio':   null,
+  'Elio':     null,
+  'Katherine':null,
+  'Ana': ["Acevedo Medical Group","Advanced Urology of South Florida - TGH","Ambulatory Surgery Center of Boca Raton","BAPTIST - Baptist Hospital","Baptist - Bethesda Hospital East","Baptist - Bethesda Hospital West","BAPTIST - Homestead Hospital","Baptist Health Miami Cancer Institute","Bascom Palmer Eye Institute","CCSF - Tampa General Hospital (Palm Beach)","CCSF - Tampa General Hospital (Palm Springs)","Charming Smiles Dental Center","Coral Ridge Outpatient Center","Holy Cross Hospital","HSA PGH LLC - Palmetto General Hospital","HSA PGH LLC - Palmetto General Hospital A&G","Interfaith Medical Center","Joe DiMaggio Children's Hospital","Key Biscayne Surgery Center LLC","Larkin Community Hospital","Larkin Community Hospital Palm Springs","Lauderdale Urology Associates","Memorial Hospital Miramar","Memorial Hospital Pembroke","Memorial Hospital West","Memorial Regional Hospital","Miami Lakes Surgery Center","Miami Surgical Center","NCH - Baker Downtown Hospital","NCH - North Naples Hospital","Nicklaus Children's Hospital","Palms Wellington Surgical Center","Parkcreek Surgery Center","Physicians Regional Medical Group - Collier","Physicians Regional Medical Group - Pine Ridge","Rapid Response Ambulance","RENOVO - Mount Sinai Medical Center","Skeletal Dynamics","Surgery Center of Aventura","Surgery Center of Fort. Lauderdale","Sylvester - Comprehensive Cancer Center","TENET - Delray Medical Center","TENET - Good Samaritan","TENET - Northshore Medical Center","TENET - Palm Beach Gardens Medical Center","TENET - St. Mary's Medical Center","Tenet - West Boca Medical Center","The Lennar Foundation Medical Center","The Surgery Center at Doral","UM - Converge Miami","University of Miami Hospital","VA Medical Center Miami","Viera VA Outpatient Clinic","West Palm Beach VA Medical Center","William \"Bill\" Kling VA Clinic"]
+};
+
 // What each role CANNOT see (sections hidden in detail + form)
 var ROLE_HIDE = {
   admin:      [],
@@ -1361,6 +1373,7 @@ function populateFilters() {
 
 function filterJobs() {
   var q=document.getElementById('search-input').value.toLowerCase();
+  var userFacilities = USER_FACILITIES[currentUser] || null;
   var type=document.getElementById('filter-type').value;
   var status=document.getElementById('filter-status').value;
   var mfr=document.getElementById('filter-mfr').value;
@@ -1370,8 +1383,9 @@ function filterJobs() {
   filteredJobs=jobs.filter(function(j){
     if (closedFilter === 'open' && j.closed) return false;
     if (closedFilter === 'closed' && !j.closed) return false;
+    var facilityAllowed = !userFacilities || userFacilities.indexOf(j.facility) >= 0;
     var match=!q||Object.values(j).some(function(v){return typeof v==='string'&&v.toLowerCase().indexOf(q)>=0;});
-    return match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
+    return facilityAllowed&&match&&(!type||j.type===type)&&(!status||j.status===status)&&(!mfr||j.manufacturer===mfr)&&(!facility||j.facility===facility);
   });
   sortJobs();currentPage=1;renderJobsTable();applyRowFlags();
   document.getElementById('jobs-subtitle').textContent=filteredJobs.length+' of '+jobs.length+' requests · '+[...new Set(jobs.map(function(j){return j.facility;}))].length+' facilities';
@@ -2194,7 +2208,9 @@ function renderToday() {
   var readyPO = [];
 
   var snoozedIds = getSnoozed();
+  var userFacilities = USER_FACILITIES[currentUser] || null;
   jobs.forEach(function(j) {
+    if (userFacilities && userFacilities.indexOf(j.facility) < 0) return; // restrict by user
     if (snoozedIds.indexOf(j.id) >= 0) return; // skip permanently snoozed
     if (isSnoozedTimed(j.id)) return; // skip timed snooze
     var s = j.status || '';
