@@ -358,7 +358,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
         </div>
       </div>
       <div class="filters-bar">
-        <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" class="search-input" id="search-input" placeholder="Search anything — ID, model, serial, PO, vendor, notes, issue, tracking, technician..." oninput="filterJobs()"></div>
+        <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" class="search-input" id="search-input" placeholder="Search anything — ID, model, serial, PO, notes, issue, tracking, technician..." oninput="filterJobs()"></div>
         <select class="filter-select" id="filter-type" onchange="filterJobs()">
           <option value="">All Types</option>
           <option>Repair Request</option><option>Warranty Request</option><option>Purchase Request</option><option>Preventive Maintenance</option>
@@ -2334,8 +2334,10 @@ function renderToday() {
     { id: 'today-pending-approval',label: '&#9203; Pending Approval',       count: pendingApproval.length },
     { id: 'today-approved-waiting',label: '&#128230; Approved w/ PO',       count: approvedWaiting.length },
     { id: 'today-approved-nopo',   label: '&#128230; Approved w/o PO',      count: approvedNoPoArr.length },
-    { id: 'today-no-vendor',       label: '&#127981; No Vendor',            count: noVendor.length },
   ];
+  if (!currentUser || !USERS[currentUser] || USERS[currentUser].role !== 'salesrep') {
+    SECTIONS.push({ id: 'today-no-vendor', label: '&#127981; No Vendor', count: noVendor.length });
+  }
   if (currentUser === 'Andrea' || currentUser === 'Ana') {
     SECTIONS.push({ id: 'today-ready-po', label: '&#128197; Ready waiting on PO', count: readyPO.length });
   }
@@ -2379,8 +2381,10 @@ function setTodayFilter(sectionId) {
     { id: 'today-needs-estimate',   label: '&#128196; Needs Estimate',     count: parseInt(document.getElementById('count-estimate').textContent)||0 },
     { id: 'today-pending-approval', label: '&#9203; Pending Approval',     count: parseInt(document.getElementById('count-pending-approval').textContent)||0 },
     { id: 'today-approved-waiting', label: '&#128230; Approved — Waiting', count: parseInt(document.getElementById('count-approved-waiting').textContent)||0 },
-    { id: 'today-no-vendor',        label: '&#127981; No Vendor',          count: parseInt(document.getElementById('count-no-vendor').textContent)||0 },
   ];
+  if (!currentUser || !USERS[currentUser] || USERS[currentUser].role !== 'salesrep') {
+    SECTIONS.push({ id: 'today-no-vendor', label: '&#127981; No Vendor', count: parseInt(document.getElementById('count-no-vendor').textContent)||0 });
+  }
   if (currentUser === 'Andrea' || currentUser === 'Ana') {
     var rpoEl = document.getElementById('count-ready-po');
     SECTIONS.push({ id: 'today-ready-po', label: '&#128197; Ready — Waiting PO', count: rpoEl ? (parseInt(rpoEl.textContent)||0) : 0 });
