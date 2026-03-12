@@ -1004,10 +1004,15 @@ function loadJobsFromSupabase(callback) {
       console.log('[SB] Empty — seeding ' + jobs.length + ' jobs...');
       seedJobsToSupabase();
     }
-    if (callback) callback();
+    // Also load pins/snooze for the current user
+    loadPinsFromSB(function() {
+      if (callback) callback();
+    });
   }).catch(function(e) {
     console.warn('[SB] Load failed, using hardcoded data:', e);
-    if (callback) callback();
+    loadPinsFromSB(function() {
+      if (callback) callback();
+    });
   });
 }
 
@@ -1238,6 +1243,7 @@ function showApp(username, role) {
 
 function logout() {
   currentUser = null;
+  _pinCache = null; _snoozeCache = null; _snoozedTimedCache = null;
   localStorage.removeItem('crm_user'); localStorage.removeItem('crm_role');
   document.getElementById('app-shell').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -1918,28 +1924,82 @@ function shortType(t){if(t==='Repair Request') return '&#128295; Repair';if(t===
 function statusDot(s){if(s==='Open'||s==='Incoming'||s==='Pending assignment') return 'dot-open';if(s==='Approved w/ PO'||s==='Approved w/o PO') return 'dot-approved';if(s==='No Problem Found'||s==='Completed') return 'dot-closed';return 'dot-pending';}
 function fmtDate(d){if(!d) return '&mdash;';var p=d.split('-');if(p.length<3) return d;return p[1]+'/'+p[2]+'/'+p[0];}
 
+// ─── PINS & SNOOZE: Supabase-backed, per user ────────────────────────────────
+// In-memory cache (loaded on login, written through to SB + localStorage)
+var _pinCache = null; // string[]
+var _snoozeCache = null; // string[]
+var _snoozedTimedCache = null; // {id: timestamp}
+
+function _pinsRowId() { return currentUser || 'anonymous'; }
+
+function _savePinsToSB() {
+  sbUpsert('pins', {
+    user_id: _pinsRowId(),
+    pinned: JSON.stringify(_pinCache || []),
+    snoozed: JSON.stringify(_snoozeCache || []),
+    snoozed_timed: JSON.stringify(_snoozedTimedCache || {}),
+    updated_at: new Date().toISOString()
+  }).catch(function(e){ console.warn('[SB] pins save error:', e); });
+  // keep localStorage in sync as instant fallback
+  localStorage.setItem('crm_pinned', JSON.stringify(_pinCache || []));
+  localStorage.setItem('crm_snoozed', JSON.stringify(_snoozeCache || []));
+  localStorage.setItem('crm_snoozed_timed', JSON.stringify(_snoozedTimedCache || {}));
+}
+
+function loadPinsFromSB(callback) {
+  if (!currentUser) { if(callback) callback(); return; }
+  fetch(SB_URL + '/rest/v1/pins?user_id=eq.' + encodeURIComponent(_pinsRowId()) + '&select=*', {
+    headers: sbHeaders()
+  }).then(function(r){ return r.json(); }).then(function(rows) {
+    if (Array.isArray(rows) && rows.length > 0) {
+      try { _pinCache = JSON.parse(rows[0].pinned || '[]'); } catch(e){ _pinCache = []; }
+      try { _snoozeCache = JSON.parse(rows[0].snoozed || '[]'); } catch(e){ _snoozeCache = []; }
+      try { _snoozedTimedCache = JSON.parse(rows[0].snoozed_timed || '{}'); } catch(e){ _snoozedTimedCache = {}; }
+      // sync to localStorage
+      localStorage.setItem('crm_pinned', JSON.stringify(_pinCache));
+      localStorage.setItem('crm_snoozed', JSON.stringify(_snoozeCache));
+      localStorage.setItem('crm_snoozed_timed', JSON.stringify(_snoozedTimedCache));
+    } else {
+      // no row yet — seed from localStorage
+      try { _pinCache = JSON.parse(localStorage.getItem('crm_pinned') || '[]'); } catch(e){ _pinCache = []; }
+      try { _snoozeCache = JSON.parse(localStorage.getItem('crm_snoozed') || '[]'); } catch(e){ _snoozeCache = []; }
+      try { _snoozedTimedCache = JSON.parse(localStorage.getItem('crm_snoozed_timed') || '{}'); } catch(e){ _snoozedTimedCache = {}; }
+    }
+    if (callback) callback();
+  }).catch(function(e){
+    console.warn('[SB] pins load error:', e);
+    try { _pinCache = JSON.parse(localStorage.getItem('crm_pinned') || '[]'); } catch(e2){ _pinCache = []; }
+    try { _snoozeCache = JSON.parse(localStorage.getItem('crm_snoozed') || '[]'); } catch(e2){ _snoozeCache = []; }
+    try { _snoozedTimedCache = JSON.parse(localStorage.getItem('crm_snoozed_timed') || '{}'); } catch(e2){ _snoozedTimedCache = {}; }
+    if (callback) callback();
+  });
+}
+
 // ─── SNOOZE / DO NOT REMIND ─────────────────────────────────────────────────
 function getSnoozed() {
+  if (_snoozeCache !== null) return _snoozeCache;
   try { return JSON.parse(localStorage.getItem('crm_snoozed') || '[]'); } catch(e) { return []; }
 }
 // ─── PIN FUNCTIONS ───────────────────────────────────────────────────────────
 function getPinned() {
+  if (_pinCache !== null) return _pinCache;
   try { return JSON.parse(localStorage.getItem('crm_pinned') || '[]'); } catch(e) { return []; }
 }
 function isPinned(jobId) {
   return getPinned().indexOf(String(jobId)) !== -1;
 }
 function togglePin(jobId) {
-  var pinned = getPinned();
-  var idx = pinned.indexOf(String(jobId));
-  if (idx === -1) pinned.push(String(jobId));
-  else pinned.splice(idx, 1);
-  localStorage.setItem('crm_pinned', JSON.stringify(pinned));
+  _pinCache = getPinned();
+  var idx = _pinCache.indexOf(String(jobId));
+  if (idx === -1) _pinCache.push(String(jobId));
+  else _pinCache.splice(idx, 1);
+  _savePinsToSB();
   renderToday();
 }
 
 // Timed snoozes: { id: untilTimestamp }
 function getSnoozedTimed() {
+  if (_snoozedTimedCache !== null) return _snoozedTimedCache;
   try { return JSON.parse(localStorage.getItem('crm_snoozed_timed') || '{}'); } catch(e) { return {}; }
 }
 function isSnoozedTimed(jobId) {
@@ -1948,7 +2008,8 @@ function isSnoozedTimed(jobId) {
   if (Date.now() < timed[jobId]) return true;
   // expired — clean up
   delete timed[jobId];
-  localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
+  _snoozedTimedCache = timed;
+  _savePinsToSB();
   return false;
 }
 var snoozeUndoTimers = {};
@@ -1974,9 +2035,9 @@ function snoozeForDays(jobId, days) {
   if (snoozeUndoTimers[jobId]) clearTimeout(snoozeUndoTimers[jobId]);
   snoozeUndoTimers[jobId] = setTimeout(function() {
     delete snoozeUndoTimers[jobId];
-    var timed = getSnoozedTimed();
-    timed[jobId] = Date.now() + days * 86400000;
-    localStorage.setItem('crm_snoozed_timed', JSON.stringify(timed));
+    _snoozedTimedCache = getSnoozedTimed();
+    _snoozedTimedCache[jobId] = Date.now() + days * 86400000;
+    _savePinsToSB();
     renderToday();
     renderSnoozed();
   }, 5000);
@@ -1992,11 +2053,11 @@ function isSnoozed(jobId) {
   return getSnoozed().indexOf(jobId) >= 0 || isSnoozedTimed(jobId);
 }
 function toggleSnooze(jobId) {
-  var snoozed = getSnoozed();
-  var idx = snoozed.indexOf(jobId);
-  if (idx >= 0) snoozed.splice(idx, 1);
-  else snoozed.push(jobId);
-  localStorage.setItem('crm_snoozed', JSON.stringify(snoozed));
+  _snoozeCache = getSnoozed();
+  var idx = _snoozeCache.indexOf(jobId);
+  if (idx >= 0) _snoozeCache.splice(idx, 1);
+  else _snoozeCache.push(jobId);
+  _savePinsToSB();
   renderToday();
   renderSnoozed();
 }
@@ -2786,9 +2847,10 @@ function updateCloseBtn(isClosed) {
 function refreshFromDB() {
   var btn = document.getElementById('refresh-btn');
   if (btn) { btn.textContent = '⟳ Syncing…'; btn.disabled = true; }
+  _pinCache = null; _snoozeCache = null; _snoozedTimedCache = null;
   loadJobsFromSupabase(function() {
     if (btn) { btn.textContent = '✓ Synced'; btn.disabled = false; setTimeout(function(){ btn.textContent = '⟳ Sync'; }, 2000); }
-    populateFilters(); filterJobs(); renderDashboard();
+    populateFilters(); filterJobs(); renderDashboard(); renderToday();
   });
 }
 
